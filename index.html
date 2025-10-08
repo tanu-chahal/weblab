@@ -1,28 +1,172 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Open Websites</title>
-  <style>
-    .button {
-      display: inline-block;
-      padding: 10px 20px;
-      margin: 5px;
-      font-size: 16px;
-      color: #fff;
-      background-color: #007BFF;
-      border: none;
-      border-radius: 5px;
-      text-decoration: none;
-      cursor: pointer;
-    }
-    .button:hover {
-      background-color: #0056b3;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Page - Test Pages Index</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .page-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .page-button {
+            display: block;
+            padding: 15px 20px;
+            background-color: #007acc;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .page-button:hover {
+            background-color: #005a9e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .page-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .page-title {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .page-description {
+            font-size: 12px;
+            opacity: 0.9;
+            font-weight: normal;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
-  <a id="google-link" href="https://www.google.com" target="_blank" class="button">Open Google.com</a>
-  <a id="instagram-link" href="https://www.instagram.com" target="_blank" class="button">Open Instagram.com</a>
+    <h1>Simple Page - Test Pages</h1>
+    
+    <div class="page-grid">
+        <a href="auto-select-desktop-capture-test.html" class="page-button">
+            <div class="page-title">Auto Select Desktop Capture Test</div>
+            <div class="page-description">Test desktop capture auto selection</div>
+        </a>
+        
+        <a href="autoplay-policy-test.html" class="page-button">
+            <div class="page-title">Autoplay Policy Test</div>
+            <div class="page-description">Test browser autoplay policies</div>
+        </a>
+        
+        <a href="clipboard-permission.html" class="page-button">
+            <div class="page-title">Clipboard Permission</div>
+            <div class="page-description">Test clipboard access permissions</div>
+        </a>
+        
+        <a href="force-color-profile-test.html" class="page-button">
+            <div class="page-title">Force Color Profile Test</div>
+            <div class="page-description">Test color profile forcing</div>
+        </a>
+        
+        <a href="force-dark-mode-test.html" class="page-button">
+            <div class="page-title">Force Dark Mode Test</div>
+            <div class="page-description">Test dark mode forcing</div>
+        </a>
+        
+        <a href="geolocation-auto.html" class="page-button">
+            <div class="page-title">Geolocation Auto</div>
+            <div class="page-description">Test automatic geolocation</div>
+        </a>
+        
+        <a href="hidden.html" class="page-button">
+            <div class="page-title">Hidden</div>
+            <div class="page-description">Test hidden elements</div>
+        </a>
+        
+        <a href="hidden-2.html" class="page-button">
+            <div class="page-title">Hidden 2</div>
+            <div class="page-description">Test hidden elements (variant 2)</div>
+        </a>
+        
+        <a href="hidden-3.html" class="page-button">
+            <div class="page-title">Hidden 3</div>
+            <div class="page-description">Test hidden elements (variant 3)</div>
+        </a>
+        
+        <a href="lang-flag-test.html" class="page-button">
+            <div class="page-title">Language Flag Test</div>
+            <div class="page-description">Test language flag detection</div>
+        </a>
+        
+        <a href="no-sandbox-test.html" class="page-button">
+            <div class="page-title">No Sandbox Test</div>
+            <div class="page-description">Test no-sandbox behavior</div>
+        </a>
+        
+        <a href="partially-visible.html" class="page-button">
+            <div class="page-title">Partially Visible</div>
+            <div class="page-description">Test partially visible elements</div>
+        </a>
+        
+        <a href="password-save-test.html" class="page-button">
+            <div class="page-title">Password Save Test</div>
+            <div class="page-description">Test password saving functionality</div>
+        </a>
+        
+        <a href="permissions-demo.html" class="page-button">
+            <div class="page-title">Permissions Demo</div>
+            <div class="page-description">Demonstrate various permissions</div>
+        </a>
+        
+        <a href="prefers-reduced-motion-test.html" class="page-button">
+            <div class="page-title">Prefers Reduced Motion Test</div>
+            <div class="page-description">Test reduced motion preferences</div>
+        </a>
+        
+        <a href="rtl-direction-test.html" class="page-button">
+            <div class="page-title">RTL Direction Test</div>
+            <div class="page-description">Test right-to-left text direction</div>
+        </a>
+        
+        <a href="tabs-via-link.html" class="page-button">
+            <div class="page-title">Tabs via Link</div>
+            <div class="page-description">Test tab opening via links</div>
+        </a>
+        
+        <a href="web-notifications-push.html" class="page-button">
+            <div class="page-title">Web Notifications Push</div>
+            <div class="page-description">Test web push notifications</div>
+        </a>
+    </div>
+    
+    <footer>
+        <p>Simple Page Test Suite - Navigate to any test page using the buttons above</p>
+    </footer>
 </body>
 </html>

@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Select Desktop Capture Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            line-height: 1.6;
+            background: #f8f9fa;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .command-box {
+            background: #2d3748;
+            color: #68d391;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            border-left: 4px solid #68d391;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        
+        .warning-box {
+            background: #fed7d7;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #f56565;
+            margin: 20px 0;
+        }
+        
+        .info-box {
+            background: #bee3f8;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #4299e1;
+            margin: 20px 0;
+        }
+        
+        .success-box {
+            background: #c6f6d5;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #48bb78;
+            margin: 20px 0;
+        }
+        
+        .capture-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .control-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-top: 4px solid #e53e3e;
+        }
+        
+        button {
+            background: #e53e3e;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 8px 5px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #c53030;
+        }
+        
+        button:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+        
+        .success-btn {
+            background: #38a169;
+        }
+        
+        .success-btn:hover {
+            background: #2f855a;
+        }
+        
+        .results {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+        }
+        
+        video {
+            width: 100%;
+            max-width: 500px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: #000;
+        }
+        
+        .video-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 5px;
+        }
+        
+        .status-ready { background: #c6f6d5; color: #2d5016; }
+        .status-capturing { background: #fed7d7; color: #742a2a; }
+        .status-error { background: #fbb6ce; color: #702459; }
+        
+        .source-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .source-option {
+            background: #edf2f7;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .source-option:hover {
+            border-color: #e53e3e;
+            background: #fed7d7;
+        }
+        
+        .source-option.selected {
+            border-color: #38a169;
+            background: #c6f6d5;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🖥️ Auto-Select Desktop Capture Test</h1>
+        <p>Testing Chrome's --auto-select-desktop-capture-source flag</p>
+    </div>
+
+    <div class="info-box">
+        <h3>📋 What This Flag Does</h3>
+        <p>The <code>--auto-select-desktop-capture-source</code> flag automatically selects a desktop capture source without showing the picker dialog. This is essential for:</p>
+        <ul>
+            <li><strong>Automated Testing</strong> - Screen recording in CI/CD pipelines</li>
+            <li><strong>Screen Recording Tools</strong> - Programmatic screen capture</li>
+            <li><strong>Remote Monitoring</strong> - Headless screen sharing applications</li>
+            <li><strong>Kiosk Applications</strong> - Where user interaction isn't possible</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h3>🚀 How to Test</h3>
+        
+        <h4>1. Normal Chrome (Will show picker dialog):</h4>
+        <div class="command-box">chrome http://localhost:8000/auto-select-desktop-capture-test.html</div>
+        
+        <h4>2. Auto-select entire screen:</h4>
+        <div class="command-box">chrome --auto-select-desktop-capture-source="Entire screen" http://localhost:8000/auto-select-desktop-capture-test.html</div>
+        
+        <h4>3. Auto-select specific window (if available):</h4>
+        <div class="command-box">chrome --auto-select-desktop-capture-source="Chrome" http://localhost:8000/auto-select-desktop-capture-test.html</div>
+        
+        <h4>4. Complete automated testing setup:</h4>
+        <div class="command-box">chrome --auto-select-desktop-capture-source="Entire screen" \
+  --use-fake-ui-for-media-stream \
+  --enable-usermedia-screen-capturing \
+  --allow-http-screen-capture \
+  --auto-accept-camera-and-microphone-capture \
+  http://localhost:8000/auto-select-desktop-capture-test.html</div>
+
+        <h4>5. Headless with screen capture:</h4>
+        <div class="command-box">chrome --headless \
+  --auto-select-desktop-capture-source="Entire screen" \
+  --use-fake-ui-for-media-stream \
+  --enable-usermedia-screen-capturing \
+  --virtual-time-budget=5000 \
+  --run-all-compositor-stages-before-draw \
+  http://localhost:8000/auto-select-desktop-capture-test.html</div>
+    </div>
+
+    <div class="warning-box">
+        <h3>⚠️ Important Notes</h3>
+        <ul>
+            <li><strong>Security:</strong> This flag bypasses user consent for screen capture</li>
+            <li><strong>Source Names:</strong> Common values include "Entire screen", "Chrome", "Desktop", window titles</li>
+            <li><strong>Case Sensitive:</strong> The source name must match exactly</li>
+            <li><strong>Permissions:</strong> May require additional flags for full automation</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h3>🎯 Screen Capture Tests</h3>
+        
+        <div class="info-box">
+            <p><strong>Current Status:</strong> <span id="capture-status" class="status-indicator status-ready">Ready</span></p>
+            <p><strong>Auto-select detected:</strong> <span id="autoselect-status">Checking...</span></p>
+        </div>
+
+        <div class="source-options">
+            <div class="source-option" data-source="screen">
+                <h4>🖥️ Entire Screen</h4>
+                <p>Capture the entire desktop</p>
+            </div>
+            <div class="source-option" data-source="window">
+                <h4>🪟 Application Window</h4>
+                <p>Capture a specific window</p>
+            </div>
+            <div class="source-option" data-source="tab">
+                <h4>🌐 Browser Tab</h4>
+                <p>Capture current or other tabs</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="capture-controls">
+        <div class="control-card">
+            <h4>🎬 Basic Screen Capture</h4>
+            <p>Test basic getDisplayMedia functionality:</p>
+            <button onclick="startBasicCapture()">Start Screen Capture</button>
+            <button onclick="stopCapture()" disabled id="stop-btn">Stop Capture</button>
+            <div id="basic-results" class="results"></div>
+        </div>
+
+        <div class="control-card">
+            <h4>⚡ Auto-Detection Test</h4>
+            <p>Detect if auto-select is working:</p>
+            <button onclick="testAutoSelect()">Test Auto-Select</button>
+            <button onclick="testWithConstraints()">Test with Constraints</button>
+            <div id="autoselect-results" class="results"></div>
+        </div>
+
+        <div class="control-card">
+            <h4>📊 Stream Analysis</h4>
+            <p>Analyze the captured stream:</p>
+            <button onclick="analyzeStream()" disabled id="analyze-btn">Analyze Stream</button>
+            <button onclick="takeScreenshot()" disabled id="screenshot-btn">Take Screenshot</button>
+            <div id="analysis-results" class="results"></div>
+        </div>
+
+        <div class="control-card">
+            <h4>🔧 Advanced Tests</h4>
+            <p>Test advanced capture scenarios:</p>
+            <button onclick="testMultipleCalls()">Multiple Calls Test</button>
+            <button onclick="testErrorHandling()">Error Handling Test</button>
+            <div id="advanced-results" class="results"></div>
+        </div>
+    </div>
+
+    <div class="video-container">
+        <h3>📺 Live Preview</h3>
+        <video id="preview-video" autoplay muted playsinline></video>
+        <p><em>Screen capture will appear here when started</em></p>
+    </div>
+
+    <div class="success-box">
+        <h3>✅ Expected Behavior</h3>
+        <p><strong>With --auto-select-desktop-capture-source flag:</strong></p>
+        <ul>
+            <li>No picker dialog should appear</li>
+            <li>Screen capture should start immediately</li>
+            <li>The specified source should be automatically selected</li>
+            <li>Suitable for headless and automated environments</li>
+        </ul>
+        
+        <p><strong>Without the flag:</strong></p>
+        <ul>
+            <li>Browser will show a source picker dialog</li>
+            <li>User must manually select a source</li>
+            <li>Cannot be automated without user interaction</li>
+        </ul>
+    </div>
+
+    <script>
+        let currentStream = null;
+        let isCapturing = false;
+
+        // Check for auto-select indicators on page load
+        window.addEventListener('load', () => {
+            checkAutoSelectStatus();
+            setupSourceSelection();
+        });
+
+        function checkAutoSelectStatus() {
+            const statusEl = document.getElementById('autoselect-status');
+            
+            // Check various indicators that auto-select might be active
+            const indicators = [];
+            
+            // Check command line arguments if available
+            if (window.chrome && window.chrome.runtime) {
+                try {
+                    // This is a rough way to detect if we're in a special mode
+                    indicators.push('Chrome runtime available');
+                } catch (e) {
+                    indicators.push('Chrome runtime error: ' + e.message);
+                }
+            }
+
+            // Check user agent for automation indicators
+            if (navigator.userAgent.includes('HeadlessChrome')) {
+                indicators.push('Headless mode detected');
+            }
+
+            if (navigator.webdriver) {
+                indicators.push('WebDriver mode detected');
+            }
+
+            // Update status
+            if (indicators.length > 0) {
+                statusEl.textContent = 'Likely active (automation detected)';
+                statusEl.style.color = '#38a169';
+            } else {
+                statusEl.textContent = 'Unknown (test capture to verify)';
+                statusEl.style.color = '#d69e2e';
+            }
+
+            console.log('Auto-select indicators:', indicators);
+        }
+
+        function setupSourceSelection() {
+            const sourceOptions = document.querySelectorAll('.source-option');
+            sourceOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    sourceOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                });
+            });
+        }
+
+        function updateStatus(status, className) {
+            const statusEl = document.getElementById('capture-status');
+            statusEl.textContent = status;
+            statusEl.className = `status-indicator ${className}`;
+        }
+
+        function updateButtons(capturing) {
+            document.getElementById('stop-btn').disabled = !capturing;
+            document.getElementById('analyze-btn').disabled = !capturing;
+            document.getElementById('screenshot-btn').disabled = !capturing;
+            isCapturing = capturing;
+        }
+
+        async function startBasicCapture() {
+            const results = document.getElementById('basic-results');
+            const video = document.getElementById('preview-video');
+            
+            try {
+                updateStatus('Starting capture...', 'status-capturing');
+                results.textContent = 'Requesting screen capture...\n';
+                
+                const startTime = performance.now();
+                
+                // Basic screen capture request
+                const stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: {
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                        frameRate: { ideal: 30 }
+                    },
+                    audio: false
+                });
+                
+                const endTime = performance.now();
+                const duration = endTime - startTime;
+                
+                currentStream = stream;
+                video.srcObject = stream;
+                
+                updateStatus('Capturing', 'status-capturing');
+                updateButtons(true);
+                
+                const videoTrack = stream.getVideoTracks()[0];
+                const settings = videoTrack.getSettings();
+                
+                results.textContent += `✅ Screen capture started successfully!\n`;
+                results.textContent += `⏱️ Time to start: ${duration.toFixed(2)}ms\n`;
+                results.textContent += `📱 Source: ${settings.displaySurface || 'Unknown'}\n`;
+                results.textContent += `📏 Resolution: ${settings.width}x${settings.height}\n`;
+                results.textContent += `🎞️ Frame rate: ${settings.frameRate}fps\n`;
+                results.textContent += `🔧 Device ID: ${videoTrack.id}\n`;
+                
+                // Check if this was auto-selected (no user interaction time would be very short)
+                if (duration < 100) {
+                    results.textContent += `🤖 AUTO-SELECT DETECTED! (${duration.toFixed(2)}ms is too fast for manual selection)\n`;
+                    document.getElementById('autoselect-status').textContent = 'ACTIVE (auto-selected)';
+                    document.getElementById('autoselect-status').style.color = '#38a169';
+                } else {
+                    results.textContent += `👤 Manual selection detected (${duration.toFixed(2)}ms includes user interaction)\n`;
+                }
+                
+                // Listen for stream end
+                videoTrack.addEventListener('ended', () => {
+                    results.textContent += '🛑 Stream ended by user or system\n';
+                    stopCapture();
+                });
+                
+            } catch (error) {
+                updateStatus('Error', 'status-error');
+                results.textContent += `❌ Error: ${error.name}: ${error.message}\n`;
+                
+                if (error.name === 'NotAllowedError') {
+                    results.textContent += '   This usually means permission was denied or auto-select failed\n';
+                } else if (error.name === 'NotFoundError') {
+                    results.textContent += '   No capture source available\n';
+                } else if (error.name === 'NotSupportedError') {
+                    results.textContent += '   Screen capture not supported in this browser\n';
+                }
+            }
+        }
+
+        function stopCapture() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+                
+                const video = document.getElementById('preview-video');
+                video.srcObject = null;
+                
+                updateStatus('Ready', 'status-ready');
+                updateButtons(false);
+                
+                const results = document.getElementById('basic-results');
+                results.textContent += '⏹️ Capture stopped\n';
+            }
+        }
+
+        async function testAutoSelect() {
+            const results = document.getElementById('autoselect-results');
+            results.textContent = 'Testing auto-select detection...\n';
+            
+            try {
+                const startTime = performance.now();
+                
+                // Multiple rapid calls to test auto-select
+                for (let i = 0; i < 3; i++) {
+                    results.textContent += `\nAttempt ${i + 1}:\n`;
+                    
+                    const attemptStart = performance.now();
+                    const stream = await navigator.mediaDevices.getDisplayMedia({
+                        video: true,
+                        audio: false
+                    });
+                    const attemptEnd = performance.now();
+                    const attemptDuration = attemptEnd - attemptStart;
+                    
+                    results.textContent += `  Time: ${attemptDuration.toFixed(2)}ms\n`;
+                    
+                    if (attemptDuration < 50) {
+                        results.textContent += `  ✅ AUTO-SELECT CONFIRMED (too fast for manual)\n`;
+                    } else if (attemptDuration < 200) {
+                        results.textContent += `  ⚠️ Likely auto-select (fast response)\n`;
+                    } else {
+                        results.textContent += `  👤 Manual selection likely\n`;
+                    }
+                    
+                    const videoTrack = stream.getVideoTracks()[0];
+                    const settings = videoTrack.getSettings();
+                    results.textContent += `  Source: ${settings.displaySurface}\n`;
+                    
+                    // Stop this stream
+                    stream.getTracks().forEach(track => track.stop());
+                    
+                    // Small delay between attempts
+                    if (i < 2) await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                const totalTime = performance.now() - startTime;
+                results.textContent += `\n📊 Total test time: ${totalTime.toFixed(2)}ms\n`;
+                
+            } catch (error) {
+                results.textContent += `❌ Test failed: ${error.message}\n`;
+            }
+        }
+
+        async function testWithConstraints() {
+            const results = document.getElementById('autoselect-results');
+            results.textContent += '\n🔧 Testing with specific constraints...\n';
+            
+            const constraints = [
+                { video: { displaySurface: 'monitor' }, name: 'Monitor only' },
+                { video: { displaySurface: 'window' }, name: 'Window only' },
+                { video: { displaySurface: 'browser' }, name: 'Browser tab only' }
+            ];
+            
+            for (const constraint of constraints) {
+                try {
+                    results.textContent += `\nTesting: ${constraint.name}\n`;
+                    const startTime = performance.now();
+                    
+                    const stream = await navigator.mediaDevices.getDisplayMedia(constraint);
+                    const endTime = performance.now();
+                    
+                    const videoTrack = stream.getVideoTracks()[0];
+                    const settings = videoTrack.getSettings();
+                    
+                    results.textContent += `  ✅ Success: ${settings.displaySurface} (${(endTime - startTime).toFixed(2)}ms)\n`;
+                    
+                    stream.getTracks().forEach(track => track.stop());
+                    
+                } catch (error) {
+                    results.textContent += `  ❌ Failed: ${error.message}\n`;
+                }
+            }
+        }
+
+        async function analyzeStream() {
+            if (!currentStream) {
+                document.getElementById('analysis-results').textContent = 'No active stream to analyze\n';
+                return;
+            }
+            
+            const results = document.getElementById('analysis-results');
+            results.textContent = 'Analyzing stream...\n';
+            
+            const videoTrack = currentStream.getVideoTracks()[0];
+            const settings = videoTrack.getSettings();
+            const capabilities = videoTrack.getCapabilities();
+            
+            results.textContent += `📊 Stream Analysis:\n`;
+            results.textContent += `  Display Surface: ${settings.displaySurface}\n`;
+            results.textContent += `  Logical Surface: ${settings.logicalSurface}\n`;
+            results.textContent += `  Cursor: ${settings.cursor}\n`;
+            results.textContent += `  Resolution: ${settings.width}x${settings.height}\n`;
+            results.textContent += `  Frame Rate: ${settings.frameRate}fps\n`;
+            results.textContent += `  Aspect Ratio: ${settings.aspectRatio}\n`;
+            
+            results.textContent += `\n🔧 Capabilities:\n`;
+            if (capabilities.displaySurface) {
+                results.textContent += `  Surfaces: ${capabilities.displaySurface.join(', ')}\n`;
+            }
+            if (capabilities.logicalSurface) {
+                results.textContent += `  Logical: ${capabilities.logicalSurface}\n`;
+            }
+            if (capabilities.cursor) {
+                results.textContent += `  Cursor options: ${capabilities.cursor.join(', ')}\n`;
+            }
+            
+            // Test constraints changes
+            try {
+                await videoTrack.applyConstraints({
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                });
+                results.textContent += `✅ Constraint change successful\n`;
+            } catch (error) {
+                results.textContent += `❌ Constraint change failed: ${error.message}\n`;
+            }
+        }
+
+        async function takeScreenshot() {
+            if (!currentStream) {
+                document.getElementById('analysis-results').textContent += 'No active stream for screenshot\n';
+                return;
+            }
+            
+            const video = document.getElementById('preview-video');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            ctx.drawImage(video, 0, 0);
+            
+            // Convert to blob and create download link
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `screenshot-${Date.now()}.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                document.getElementById('analysis-results').textContent += `📸 Screenshot saved (${canvas.width}x${canvas.height})\n`;
+            });
+        }
+
+        async function testMultipleCalls() {
+            const results = document.getElementById('advanced-results');
+            results.textContent = 'Testing multiple simultaneous calls...\n';
+            
+            try {
+                const promises = [];
+                for (let i = 0; i < 3; i++) {
+                    promises.push(navigator.mediaDevices.getDisplayMedia({ video: true }));
+                }
+                
+                const streams = await Promise.all(promises);
+                results.textContent += `✅ ${streams.length} streams created simultaneously\n`;
+                
+                streams.forEach((stream, index) => {
+                    const videoTrack = stream.getVideoTracks()[0];
+                    const settings = videoTrack.getSettings();
+                    results.textContent += `  Stream ${index + 1}: ${settings.displaySurface} (${settings.width}x${settings.height})\n`;
+                    stream.getTracks().forEach(track => track.stop());
+                });
+                
+            } catch (error) {
+                results.textContent += `❌ Multiple calls failed: ${error.message}\n`;
+            }
+        }
+
+        async function testErrorHandling() {
+            const results = document.getElementById('advanced-results');
+            results.textContent += '\n🔍 Testing error scenarios...\n';
+            
+            // Test invalid constraints
+            try {
+                await navigator.mediaDevices.getDisplayMedia({
+                    video: {
+                        width: { exact: 99999 },
+                        height: { exact: 99999 }
+                    }
+                });
+                results.textContent += '❌ Invalid constraints should have failed\n';
+            } catch (error) {
+                results.textContent += `✅ Invalid constraints properly rejected: ${error.name}\n`;
+            }
+            
+            // Test unsupported constraints
+            try {
+                await navigator.mediaDevices.getDisplayMedia({
+                    video: {
+                        displaySurface: 'invalid-surface'
+                    }
+                });
+                results.textContent += '❌ Invalid surface should have failed\n';
+            } catch (error) {
+                results.textContent += `✅ Invalid surface properly rejected: ${error.name}\n`;
+            }
+        }
+
+        // Auto-run basic tests when page loads
+        setTimeout(() => {
+            console.log('Auto-running basic detection tests...');
+            if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+                console.log('Screen capture API available');
+            } else {
+                console.log('Screen capture API not available');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

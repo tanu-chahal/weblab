@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Permissions Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .permission-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        
+        .permission-section h3 {
+            color: #444;
+            margin-top: 0;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        #videoPreview {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            background-color: #000;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .location-info {
+            background-color: #e9f7ef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .audio-visualizer {
+            width: 100%;
+            height: 100px;
+            background-color: #000;
+            border-radius: 5px;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .audio-bars {
+            display: flex;
+            align-items: end;
+            height: 100%;
+            justify-content: space-around;
+            padding: 10px;
+        }
+        
+        .bar {
+            width: 4px;
+            background-color: #00ff00;
+            margin: 0 1px;
+            transition: height 0.1s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Browser Permissions Demo</h1>
+        <p>This page demonstrates how to request different types of browser permissions. Click the buttons below to test each permission type.</p>
+        
+        <!-- Flag Testing Instructions -->
+        <div class="permission-section" style="background-color: #e8f4f8; border-color: #1abc9c;">
+            <h3>🚩 Testing --use-fake-ui-for-media-stream Flag</h3>
+            <p><strong>This page is perfect for testing the <code>--use-fake-ui-for-media-stream</code> flag!</strong></p>
+            
+            <div style="background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; margin: 10px 0; font-family: monospace;">
+                # Close all Chrome instances, then run:<br>
+                chrome --use-fake-ui-for-media-stream
+            </div>
+            
+            <div style="background: #d4edda; padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #28a745;">
+                <strong>✅ Expected Behavior with Flag:</strong>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Camera and microphone permission requests will be <strong>automatically accepted</strong></li>
+                    <li>No permission pop-ups will appear</li>
+                    <li>The camera and microphone buttons below should work immediately</li>
+                    <li>You'll see a fake video stream (usually a color pattern or test image)</li>
+                    <li>Microphone will provide fake audio input</li>
+                </ul>
+            </div>
+            
+            <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #ffc107;">
+                <strong>🔍 How to Test:</strong>
+                <ol style="margin: 10px 0; padding-left: 20px;">
+                    <li>First test <strong>without</strong> the flag - you should see permission dialogs</li>
+                    <li>Close Chrome completely</li>
+                    <li>Relaunch with <code>--use-fake-ui-for-media-stream</code></li>
+                    <li>Click the camera/microphone buttons - no dialogs should appear!</li>
+                    <li>Camera will show fake content instead of your actual camera</li>
+                </ol>
+            </div>
+            
+            <p><em>💡 This flag is particularly useful for automated testing, demos, or development where you don't want to be prompted for media permissions repeatedly.</em></p>
+        </div>
+        
+        <!-- Camera Permission Section -->
+        <div class="permission-section">
+            <h3>📷 Camera Permission</h3>
+            <p>Request access to your device's camera to capture video.</p>
+            <button id="cameraBtn" onclick="requestCameraPermission()">Request Camera Access</button>
+            <button id="stopCameraBtn" onclick="stopCamera()" disabled>Stop Camera</button>
+            <div id="cameraStatus" class="status" style="display: none;"></div>
+            <video id="videoPreview" autoplay muted style="display: none;"></video>
+        </div>
+        
+        <!-- Microphone Permission Section -->
+        <div class="permission-section">
+            <h3>🎤 Microphone Permission</h3>
+            <p>Request access to your device's microphone to capture audio.</p>
+            <button id="micBtn" onclick="requestMicrophonePermission()">Request Microphone Access</button>
+            <button id="stopMicBtn" onclick="stopMicrophone()" disabled>Stop Microphone</button>
+            <div id="micStatus" class="status" style="display: none;"></div>
+            <div id="audioVisualizer" class="audio-visualizer" style="display: none;">
+                <div class="audio-bars" id="audioBars"></div>
+            </div>
+        </div>
+        
+        <!-- Location Permission Section -->
+        <div class="permission-section">
+            <h3>📍 Location Permission</h3>
+            <p>Request access to your device's location services.</p>
+            <button id="locationBtn" onclick="requestLocationPermission()">Request Location Access</button>
+            <button id="watchLocationBtn" onclick="watchLocation()" disabled>Watch Location Changes</button>
+            <button id="stopLocationBtn" onclick="stopLocation()" disabled>Stop Location Tracking</button>
+            <div id="locationStatus" class="status" style="display: none;"></div>
+            <div id="locationInfo" class="location-info" style="display: none;"></div>
+        </div>
+        
+        <!-- Notifications Permission Section -->
+        <div class="permission-section">
+            <h3>🔔 Notifications Permission</h3>
+            <p>Request permission to show browser notifications.</p>
+            <button id="notificationBtn" onclick="requestNotificationPermission()">Request Notification Permission</button>
+            <button id="sendNotificationBtn" onclick="sendTestNotification()" disabled>Send Test Notification</button>
+            <div id="notificationStatus" class="status" style="display: none;"></div>
+        </div>
+        
+        <!-- Combined Permissions Section -->
+        <div class="permission-section">
+            <h3>🎥 Combined Camera + Microphone</h3>
+            <p>Request both camera and microphone permissions for video calls.</p>
+            <button id="combinedBtn" onclick="requestCombinedPermissions()">Request Camera + Microphone</button>
+            <button id="stopCombinedBtn" onclick="stopCombined()" disabled>Stop All</button>
+            <div id="combinedStatus" class="status" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentStream = null;
+        let audioContext = null;
+        let analyser = null;
+        let animationId = null;
+        let locationWatchId = null;
+
+        // Camera Permission Functions
+        async function requestCameraPermission() {
+            const statusDiv = document.getElementById('cameraStatus');
+            const videoElement = document.getElementById('videoPreview');
+            const cameraBtn = document.getElementById('cameraBtn');
+            const stopBtn = document.getElementById('stopCameraBtn');
+            
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Requesting camera permission...';
+            
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480 } 
+                });
+                
+                videoElement.srcObject = currentStream;
+                videoElement.style.display = 'block';
+                
+                statusDiv.className = 'status success';
+                statusDiv.textContent = '✅ Camera access granted!';
+                
+                cameraBtn.disabled = true;
+                stopBtn.disabled = false;
+                
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `❌ Camera access denied: ${error.message}`;
+                console.error('Camera error:', error);
+            }
+        }
+        
+        function stopCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+            
+            const videoElement = document.getElementById('videoPreview');
+            videoElement.style.display = 'none';
+            videoElement.srcObject = null;
+            
+            const statusDiv = document.getElementById('cameraStatus');
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Camera stopped';
+            
+            document.getElementById('cameraBtn').disabled = false;
+            document.getElementById('stopCameraBtn').disabled = true;
+        }
+        
+        // Microphone Permission Functions
+        async function requestMicrophonePermission() {
+            const statusDiv = document.getElementById('micStatus');
+            const visualizer = document.getElementById('audioVisualizer');
+            const micBtn = document.getElementById('micBtn');
+            const stopBtn = document.getElementById('stopMicBtn');
+            
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Requesting microphone permission...';
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                // Setup audio analysis
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                const source = audioContext.createMediaStreamSource(stream);
+                source.connect(analyser);
+                
+                analyser.fftSize = 256;
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                
+                // Create audio visualizer bars
+                const audioBars = document.getElementById('audioBars');
+                audioBars.innerHTML = '';
+                for (let i = 0; i < 32; i++) {
+                    const bar = document.createElement('div');
+                    bar.className = 'bar';
+                    bar.style.height = '10px';
+                    audioBars.appendChild(bar);
+                }
+                
+                visualizer.style.display = 'block';
+                
+                // Animate visualizer
+                function animate() {
+                    analyser.getByteFrequencyData(dataArray);
+                    const bars = audioBars.children;
+                    
+                    for (let i = 0; i < bars.length; i++) {
+                        const barHeight = (dataArray[i * 4] / 255) * 80 + 10;
+                        bars[i].style.height = `${barHeight}px`;
+                    }
+                    
+                    animationId = requestAnimationFrame(animate);
+                }
+                animate();
+                
+                statusDiv.className = 'status success';
+                statusDiv.textContent = '✅ Microphone access granted! Speaking into your microphone will show audio levels.';
+                
+                micBtn.disabled = true;
+                stopBtn.disabled = false;
+                
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `❌ Microphone access denied: ${error.message}`;
+                console.error('Microphone error:', error);
+            }
+        }
+        
+        function stopMicrophone() {
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+            }
+            
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            
+            const visualizer = document.getElementById('audioVisualizer');
+            visualizer.style.display = 'none';
+            
+            const statusDiv = document.getElementById('micStatus');
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Microphone stopped';
+            
+            document.getElementById('micBtn').disabled = false;
+            document.getElementById('stopMicBtn').disabled = true;
+        }
+        
+        // Location Permission Functions
+        function requestLocationPermission() {
+            const statusDiv = document.getElementById('locationStatus');
+            const locationInfo = document.getElementById('locationInfo');
+            const locationBtn = document.getElementById('locationBtn');
+            const watchBtn = document.getElementById('watchLocationBtn');
+            
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Requesting location permission...';
+            
+            if (!navigator.geolocation) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ Geolocation is not supported by this browser.';
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const accuracy = position.coords.accuracy;
+                    
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = '✅ Location access granted!';
+                    
+                    locationInfo.style.display = 'block';
+                    locationInfo.innerHTML = `
+                        <strong>📍 Current Location:</strong><br>
+                        Latitude: ${lat.toFixed(6)}<br>
+                        Longitude: ${lon.toFixed(6)}<br>
+                        Accuracy: ${accuracy.toFixed(0)} meters<br>
+                        <small>Timestamp: ${new Date(position.timestamp).toLocaleString()}</small>
+                    `;
+                    
+                    locationBtn.disabled = true;
+                    watchBtn.disabled = false;
+                },
+                function(error) {
+                    let errorMessage = '';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = 'Location access denied by user.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = 'Location information is unavailable.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = 'Location request timed out.';
+                            break;
+                        default:
+                            errorMessage = 'An unknown error occurred.';
+                            break;
+                    }
+                    
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = `❌ ${errorMessage}`;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+        
+        function watchLocation() {
+            const statusDiv = document.getElementById('locationStatus');
+            const locationInfo = document.getElementById('locationInfo');
+            const watchBtn = document.getElementById('watchLocationBtn');
+            const stopBtn = document.getElementById('stopLocationBtn');
+            
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Watching for location changes...';
+            
+            locationWatchId = navigator.geolocation.watchPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const accuracy = position.coords.accuracy;
+                    
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = '✅ Location tracking active! Move around to see updates.';
+                    
+                    locationInfo.innerHTML = `
+                        <strong>📍 Live Location:</strong><br>
+                        Latitude: ${lat.toFixed(6)}<br>
+                        Longitude: ${lon.toFixed(6)}<br>
+                        Accuracy: ${accuracy.toFixed(0)} meters<br>
+                        <small>Last updated: ${new Date(position.timestamp).toLocaleString()}</small>
+                    `;
+                },
+                function(error) {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = `❌ Location tracking error: ${error.message}`;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 30000
+                }
+            );
+            
+            watchBtn.disabled = true;
+            stopBtn.disabled = false;
+        }
+        
+        function stopLocation() {
+            if (locationWatchId) {
+                navigator.geolocation.clearWatch(locationWatchId);
+                locationWatchId = null;
+            }
+            
+            const statusDiv = document.getElementById('locationStatus');
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Location tracking stopped';
+            
+            document.getElementById('locationBtn').disabled = false;
+            document.getElementById('watchLocationBtn').disabled = true;
+            document.getElementById('stopLocationBtn').disabled = true;
+        }
+        
+        // Notification Permission Functions
+        async function requestNotificationPermission() {
+            const statusDiv = document.getElementById('notificationStatus');
+            const notificationBtn = document.getElementById('notificationBtn');
+            const sendBtn = document.getElementById('sendNotificationBtn');
+            
+            statusDiv.style.display = 'block';
+            
+            if (!('Notification' in window)) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ This browser does not support notifications.';
+                return;
+            }
+            
+            if (Notification.permission === 'granted') {
+                statusDiv.className = 'status success';
+                statusDiv.textContent = '✅ Notification permission already granted!';
+                sendBtn.disabled = false;
+                return;
+            }
+            
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Requesting notification permission...';
+            
+            try {
+                const permission = await Notification.requestPermission();
+                
+                if (permission === 'granted') {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = '✅ Notification permission granted!';
+                    sendBtn.disabled = false;
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = '❌ Notification permission denied.';
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `❌ Error requesting notification permission: ${error.message}`;
+            }
+        }
+        
+        function sendTestNotification() {
+            if (Notification.permission === 'granted') {
+                new Notification('🎉 Test Notification', {
+                    body: 'This is a test notification from the permissions demo!',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔔</text></svg>',
+                    tag: 'test-notification'
+                });
+                
+                const statusDiv = document.getElementById('notificationStatus');
+                statusDiv.className = 'status success';
+                statusDiv.textContent = '✅ Test notification sent!';
+            }
+        }
+        
+        // Combined Permissions Functions
+        async function requestCombinedPermissions() {
+            const statusDiv = document.getElementById('combinedStatus');
+            const videoElement = document.getElementById('videoPreview');
+            const combinedBtn = document.getElementById('combinedBtn');
+            const stopBtn = document.getElementById('stopCombinedBtn');
+            
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Requesting camera and microphone permissions...';
+            
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480 },
+                    audio: true
+                });
+                
+                videoElement.srcObject = currentStream;
+                videoElement.style.display = 'block';
+                videoElement.muted = false; // Allow audio for combined mode
+                
+                statusDiv.className = 'status success';
+                statusDiv.textContent = '✅ Both camera and microphone access granted!';
+                
+                combinedBtn.disabled = true;
+                stopBtn.disabled = false;
+                
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `❌ Permission denied: ${error.message}`;
+                console.error('Combined permissions error:', error);
+            }
+        }
+        
+        function stopCombined() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+            
+            const videoElement = document.getElementById('videoPreview');
+            videoElement.style.display = 'none';
+            videoElement.srcObject = null;
+            videoElement.muted = true;
+            
+            const statusDiv = document.getElementById('combinedStatus');
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Camera and microphone stopped';
+            
+            document.getElementById('combinedBtn').disabled = false;
+            document.getElementById('stopCombinedBtn').disabled = true;
+        }
+        
+        // Clean up when page is unloaded
+        window.addEventListener('beforeunload', function() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+            if (audioContext) {
+                audioContext.close();
+            }
+            if (locationWatchId) {
+                navigator.geolocation.clearWatch(locationWatchId);
+            }
+        });
+    </script>
+</body>
+</html>

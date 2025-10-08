@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Notification & Push APIs Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            background: #f4f4f4;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .api-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+        h2 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        h3 { color: #555; }
+        code {
+            background: #f8f9fa;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Web Notification & Push APIs Demo</h1>
+    <p>This page demonstrates the Web Notification API and Push API capabilities in modern browsers.</p>
+
+    <div class="api-section">
+        <h2>📢 Web Notification API</h2>
+        <p>The Notification API allows web pages to display system notifications to users, even when the page is not in focus.</p>
+        
+        <div id="notificationStatus" class="status info">
+            Checking notification permission status...
+        </div>
+
+        <button id="requestPermission">Request Notification Permission</button>
+        <button id="showNotification" disabled>Show Test Notification</button>
+        <button id="showAdvancedNotification" disabled>Show Advanced Notification</button>
+        <button id="testFocus">Test Focus Change (Switch tabs then click)</button>
+        <button id="forceNotification">Force Notification (Always Works)</button>
+    </div>
+
+    <div class="api-section">
+        <h2>🔔 Push API</h2>
+        <p>The Push API enables web applications to receive push messages from a server, even when the app is not running.</p>
+        
+        <div id="pushStatus" class="status info">
+            Checking push subscription status...
+        </div>
+
+        <button id="registerServiceWorker">Register Service Worker</button>
+        <button id="subscribeToPush" disabled>Subscribe to Push</button>
+        <button id="unsubscribeFromPush" disabled>Unsubscribe from Push</button>
+        <button id="sendTestPush" disabled>Send Test Push (Simulation)</button>
+    </div>
+
+    <div class="api-section">
+        <h2>ℹ️ API Information</h2>
+        <div id="apiInfo">
+            <h3>Browser Support:</h3>
+            <ul>
+                <li><strong>Notification API:</strong> <span id="notificationSupport"></span></li>
+                <li><strong>Push API:</strong> <span id="pushSupport"></span></li>
+                <li><strong>Service Worker:</strong> <span id="serviceWorkerSupport"></span></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <h3>What these APIs do:</h3>
+        <ul>
+            <li><strong>Web Notification API:</strong> Shows native notifications in the operating system</li>
+            <li><strong>Push API:</strong> Receives server-sent messages even when the browser is closed</li>
+            <li><strong>Service Worker:</strong> Required for push notifications, runs in background</li>
+        </ul>
+        
+        <h3>🔧 Troubleshooting Notifications:</h3>
+        <div class="status info">
+            <strong>If notifications aren't showing:</strong>
+            <ol>
+                <li><strong>Check browser settings:</strong> Make sure notifications aren't blocked globally</li>
+                <li><strong>Site permissions:</strong> Click the lock/info icon in address bar → Allow notifications</li>
+                <li><strong>Focus issue:</strong> Try switching to another tab/app - some browsers only show notifications when page isn't focused</li>
+                <li><strong>macOS:</strong> Check System Preferences → Notifications → Your Browser</li>
+                <li><strong>Windows:</strong> Check Settings → System → Notifications & actions</li>
+                <li><strong>Do Not Disturb:</strong> Make sure Do Not Disturb mode is off</li>
+            </ol>
+            
+            <strong>For Push API / Service Worker issues:</strong>
+            <ol>
+                <li><strong>Serve over HTTP/HTTPS:</strong> Service Workers don't work with file:// protocol</li>
+                <li><strong>Use a local server:</strong> Try Live Server extension in VS Code or <code>python -m http.server</code></li>
+                <li><strong>HTTPS required:</strong> Push API requires HTTPS in production (localhost works with HTTP)</li>
+                <li><strong>Check console:</strong> Open Developer Tools to see detailed error messages</li>
+            </ol>
+            
+            <strong>Focus/Background notification behavior:</strong>
+            <ol>
+                <li><strong>Browser Focus Policy:</strong> Most browsers only show notifications when the tab/window is NOT active</li>
+                <li><strong>Test Methods:</strong> Use "Force Notification" button for guaranteed results</li>
+                <li><strong>Real Focus Test:</strong> Click "Test Focus Change", then switch to another app/tab and come back</li>
+                <li><strong>Visibility API:</strong> Modern browsers use Page Visibility API to detect when tabs are hidden</li>
+                <li><strong>Desktop vs Mobile:</strong> Behavior may differ between desktop and mobile browsers</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const notificationStatus = document.getElementById('notificationStatus');
+        const pushStatus = document.getElementById('pushStatus');
+        const requestPermissionBtn = document.getElementById('requestPermission');
+        const showNotificationBtn = document.getElementById('showNotification');
+        const showAdvancedNotificationBtn = document.getElementById('showAdvancedNotification');
+        const registerServiceWorkerBtn = document.getElementById('registerServiceWorker');
+        const subscribeToPushBtn = document.getElementById('subscribeToPush');
+        const unsubscribeFromPushBtn = document.getElementById('unsubscribeFromPush');
+        const sendTestPushBtn = document.getElementById('sendTestPush');
+
+        let registration = null;
+        let pushSubscription = null;
+
+        // Check browser support on page load
+        window.addEventListener('load', () => {
+            checkBrowserSupport();
+            checkNotificationPermission();
+            checkPushSubscription();
+        });
+
+        function checkBrowserSupport() {
+            document.getElementById('notificationSupport').textContent = 
+                'Notification' in window ? '✅ Supported' : '❌ Not Supported';
+            
+            document.getElementById('pushSupport').textContent = 
+                'PushManager' in window ? '✅ Supported' : '❌ Not Supported';
+            
+            document.getElementById('serviceWorkerSupport').textContent = 
+                'serviceWorker' in navigator ? '✅ Supported' : '❌ Not Supported';
+        }
+
+        function checkNotificationPermission() {
+            if (!('Notification' in window)) {
+                notificationStatus.textContent = 'This browser does not support notifications';
+                notificationStatus.className = 'status error';
+                return;
+            }
+
+            const permission = Notification.permission;
+            
+            switch (permission) {
+                case 'granted':
+                    notificationStatus.textContent = 'Notification permission: Granted ✅';
+                    notificationStatus.className = 'status success';
+                    showNotificationBtn.disabled = false;
+                    showAdvancedNotificationBtn.disabled = false;
+                    break;
+                case 'denied':
+                    notificationStatus.textContent = 'Notification permission: Denied ❌';
+                    notificationStatus.className = 'status error';
+                    break;
+                default:
+                    notificationStatus.textContent = 'Notification permission: Not requested yet';
+                    notificationStatus.className = 'status warning';
+                    break;
+            }
+        }
+
+        async function checkPushSubscription() {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                pushStatus.textContent = 'Push notifications not supported in this browser';
+                pushStatus.className = 'status error';
+                return;
+            }
+
+            try {
+                registration = await navigator.serviceWorker.getRegistration();
+                if (registration) {
+                    pushStatus.textContent = 'Service Worker registered ✅';
+                    pushStatus.className = 'status success';
+                    subscribeToPushBtn.disabled = false;
+                    
+                    pushSubscription = await registration.pushManager.getSubscription();
+                    if (pushSubscription) {
+                        pushStatus.textContent = 'Subscribed to push notifications ✅';
+                        unsubscribeFromPushBtn.disabled = false;
+                        sendTestPushBtn.disabled = false;
+                        subscribeToPushBtn.disabled = true;
+                    }
+                } else {
+                    pushStatus.textContent = 'Service Worker not registered. Click to register.';
+                    pushStatus.className = 'status warning';
+                }
+            } catch (error) {
+                pushStatus.textContent = 'Error checking push subscription: ' + error.message;
+                pushStatus.className = 'status error';
+            }
+        }
+
+        // Event listeners
+        requestPermissionBtn.addEventListener('click', async () => {
+            try {
+                console.log('Requesting notification permission...');
+                
+                if (!('Notification' in window)) {
+                    notificationStatus.textContent = 'This browser does not support notifications';
+                    notificationStatus.className = 'status error';
+                    return;
+                }
+                
+                if (Notification.permission === 'granted') {
+                    notificationStatus.textContent = 'Permission already granted! ✅';
+                    notificationStatus.className = 'status success';
+                    return;
+                }
+                
+                // Show instruction before requesting
+                notificationStatus.textContent = 'Requesting permission... Please allow notifications in the popup.';
+                notificationStatus.className = 'status info';
+                
+                const permission = await Notification.requestPermission();
+                console.log('Permission result:', permission);
+                
+                setTimeout(() => {
+                    checkNotificationPermission();
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error requesting notification permission:', error);
+                notificationStatus.textContent = 'Error requesting permission: ' + error.message;
+                notificationStatus.className = 'status error';
+            }
+        });
+
+        showNotificationBtn.addEventListener('click', () => {
+            console.log('Show notification button clicked');
+            console.log('Notification permission:', Notification.permission);
+            
+            if (Notification.permission === 'granted') {
+                try {
+                    const notification = new Notification('📱 Test Notification', {
+                        body: 'This notification will disappear automatically in 4 seconds!',
+                        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle fill="%23007bff" cx="50" cy="50" r="45"/><text y=".7em" x="50%" text-anchor="middle" font-size="50" fill="white">🔔</text></svg>',
+                        badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle fill="%23007bff" cx="50" cy="50" r="45"/><text y=".7em" x="50%" text-anchor="middle" font-size="40" fill="white">�</text></svg>',
+                        tag: 'test-notification',
+                        requireInteraction: false,
+                        silent: false,
+                        vibrate: [200, 100, 200],
+                        timestamp: Date.now(),
+                        data: {
+                            url: window.location.href,
+                            timestamp: Date.now()
+                        }
+                    });
+                    
+                    notification.onclick = function() {
+                        console.log('Notification clicked!');
+                        window.focus();
+                        this.close();
+                        notificationStatus.textContent = 'Notification clicked and closed! 👆';
+                        notificationStatus.className = 'status success';
+                    };
+                    
+                    notification.onshow = function() {
+                        console.log('Notification shown successfully!');
+                        notificationStatus.textContent = 'Test notification shown! Will close in 4 seconds... ✅';
+                        notificationStatus.className = 'status success';
+                    };
+                    
+                    notification.onerror = function(event) {
+                        console.error('Notification error:', event);
+                        notificationStatus.textContent = 'Error showing notification: ' + event.type;
+                        notificationStatus.className = 'status error';
+                    };
+                    
+                    notification.onclose = function() {
+                        console.log('Notification closed');
+                        notificationStatus.textContent = 'Test notification closed automatically ✅';
+                        notificationStatus.className = 'status info';
+                    };
+                    
+                    // Auto-close after 4 seconds for realistic behavior
+                    setTimeout(() => {
+                        if (notification) {
+                            notification.close();
+                        }
+                    }, 4000);
+                    
+                } catch (error) {
+                    console.error('Error creating notification:', error);
+                    notificationStatus.textContent = 'Error creating notification: ' + error.message;
+                    notificationStatus.className = 'status error';
+                }
+            } else if (Notification.permission === 'denied') {
+                notificationStatus.textContent = 'Notifications are blocked. Please enable them in browser settings.';
+                notificationStatus.className = 'status error';
+                alert('Notifications are blocked. Please:\n1. Click the lock icon in the address bar\n2. Allow notifications\n3. Refresh the page');
+            } else {
+                notificationStatus.textContent = 'Please request notification permission first.';
+                notificationStatus.className = 'status warning';
+            }
+        });
+
+        showAdvancedNotificationBtn.addEventListener('click', () => {
+            if (Notification.permission === 'granted') {
+                const notification = new Notification('🌟 Advanced Notification', {
+                    body: 'This is an interactive notification with actions! Will auto-close in 5 seconds.',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle fill="%23ffc107" cx="50" cy="50" r="45"/><text y=".7em" x="50%" text-anchor="middle" font-size="40" fill="white">⭐</text></svg>',
+                    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle fill="%23ffc107" cx="50" cy="50" r="45"/><text y=".7em" x="50%" text-anchor="middle" font-size="30" fill="white">🚀</text></svg>',
+                    tag: 'advanced-demo',
+                    renotify: true,
+                    requireInteraction: false,
+                    vibrate: [100, 50, 100, 50, 100],
+                    silent: false,
+                    timestamp: Date.now(),
+                    actions: [
+                        { action: 'yes', title: '👍 Awesome!' },
+                        { action: 'no', title: '👎 Not now' }
+                    ],
+                    data: { 
+                        timestamp: Date.now(),
+                        type: 'advanced',
+                        url: window.location.href
+                    }
+                });
+
+                notification.onclick = () => {
+                    console.log('Advanced notification clicked!');
+                    notificationStatus.textContent = 'Advanced notification clicked! 🌟';
+                    notificationStatus.className = 'status success';
+                    notification.close();
+                };
+
+                notification.onshow = () => {
+                    console.log('Advanced notification shown!');
+                    notificationStatus.textContent = 'Advanced notification shown! Will close in 5 seconds... 🌟';
+                    notificationStatus.className = 'status success';
+                };
+
+                notification.onclose = () => {
+                    console.log('Advanced notification closed');
+                    notificationStatus.textContent = 'Advanced notification closed automatically ✨';
+                    notificationStatus.className = 'status info';
+                };
+
+                // Auto-close after 5 seconds
+                setTimeout(() => {
+                    if (notification) {
+                        notification.close();
+                    }
+                }, 5000);
+            }
+        });
+
+        registerServiceWorkerBtn.addEventListener('click', async () => {
+            try {
+                console.log('Registering Service Worker...');
+                
+                if (!('serviceWorker' in navigator)) {
+                    throw new Error('Service Workers not supported in this browser');
+                }
+                
+                // Register the service worker from external file
+                registration = await navigator.serviceWorker.register('./sw.js', {
+                    scope: './'
+                });
+                
+                console.log('Service Worker registered successfully:', registration);
+                
+                // Wait for the service worker to be ready
+                await navigator.serviceWorker.ready;
+                
+                pushStatus.textContent = 'Service Worker registered successfully ✅';
+                pushStatus.className = 'status success';
+                subscribeToPushBtn.disabled = false;
+                registerServiceWorkerBtn.disabled = true;
+                
+            } catch (error) {
+                console.error('Service Worker registration failed:', error);
+                pushStatus.textContent = 'Failed to register Service Worker: ' + error.message;
+                pushStatus.className = 'status error';
+                
+                // Provide helpful error message for common issues
+                if (error.message.includes('protocol')) {
+                    pushStatus.textContent += ' (Try serving the page over HTTP/HTTPS instead of file://)';
+                }
+            }
+        });
+
+        subscribeToPushBtn.addEventListener('click', async () => {
+            try {
+                // Generate a VAPID key pair (simplified for demo)
+                const applicationServerKey = new Uint8Array([
+                    0x04, 0x37, 0x77, 0xfe, 0x14, 0x32, 0xec, 0xd2, 0x0a, 0x0e, 0x6b, 0x52, 0xd1, 0x5a, 0x5e, 0xfd,
+                    0x3c, 0x91, 0x2f, 0xe4, 0x78, 0x64, 0xd9, 0x9e, 0x61, 0x7c, 0x4f, 0x8e, 0x7a, 0x6f, 0x8e, 0x8d,
+                    0x0a, 0x5f, 0x8b, 0x2a, 0x65, 0x4e, 0x8f, 0x2a, 0x9e, 0x8c, 0x7d, 0x3f, 0x6e, 0x8c, 0x2a, 0x5f,
+                    0x8b, 0x2a, 0x65, 0x4e, 0x8f, 0x2a, 0x9e, 0x8c, 0x7d, 0x3f, 0x6e, 0x8c, 0x2a, 0x5f, 0x8b, 0x2a,
+                    0x65
+                ]);
+
+                pushSubscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: applicationServerKey
+                });
+
+                pushStatus.textContent = 'Successfully subscribed to push notifications ✅';
+                pushStatus.className = 'status success';
+                subscribeToPushBtn.disabled = true;
+                unsubscribeFromPushBtn.disabled = false;
+                sendTestPushBtn.disabled = false;
+
+                console.log('Push subscription:', JSON.stringify(pushSubscription));
+
+            } catch (error) {
+                pushStatus.textContent = 'Failed to subscribe to push: ' + error.message;
+                pushStatus.className = 'status error';
+            }
+        });
+
+        unsubscribeFromPushBtn.addEventListener('click', async () => {
+            try {
+                if (pushSubscription) {
+                    await pushSubscription.unsubscribe();
+                    pushSubscription = null;
+                    
+                    pushStatus.textContent = 'Unsubscribed from push notifications';
+                    pushStatus.className = 'status info';
+                    subscribeToPushBtn.disabled = false;
+                    unsubscribeFromPushBtn.disabled = true;
+                    sendTestPushBtn.disabled = true;
+                }
+            } catch (error) {
+                pushStatus.textContent = 'Failed to unsubscribe: ' + error.message;
+                pushStatus.className = 'status error';
+            }
+        });
+
+        sendTestPushBtn.addEventListener('click', async () => {
+            try {
+                // Simulate a push message (in real applications, this would come from a server)
+                if (registration && registration.active) {
+                    const message = {
+                        title: '🚀 Push Message Received',
+                        body: 'This is a realistic push notification! Auto-closes in 4 seconds.',
+                        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle fill="%2328a745" cx="50" cy="50" r="45"/><text y=".7em" x="50%" text-anchor="middle" font-size="40" fill="white">🚀</text></svg>',
+                        badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle fill="%2328a745" cx="50" cy="50" r="45"/><text y=".7em" x="50%" text-anchor="middle" font-size="30" fill="white">📱</text></svg>',
+                        vibrate: [200, 100, 200, 100, 200],
+                        tag: 'test-push',
+                        requireInteraction: false,
+                        silent: false,
+                        timestamp: Date.now(),
+                        data: { 
+                            timestamp: Date.now(),
+                            simulated: true,
+                            url: window.location.href,
+                            autoClose: true
+                        },
+                        actions: [
+                            { action: 'view', title: '👀 View' },
+                            { action: 'dismiss', title: '✖️ Dismiss' }
+                        ]
+                    };
+                    
+                    // Show notification directly since we can't actually send a push message without a server
+                    const notification = await registration.showNotification(message.title, {
+                        body: message.body,
+                        icon: message.icon,
+                        badge: message.badge,
+                        vibrate: message.vibrate,
+                        tag: message.tag,
+                        requireInteraction: message.requireInteraction,
+                        silent: message.silent,
+                        timestamp: message.timestamp,
+                        data: message.data,
+                        actions: message.actions
+                    });
+                    
+                    pushStatus.textContent = 'Push notification sent! Will close automatically in 4 seconds... 🚀';
+                    pushStatus.className = 'status success';
+                    
+                    // Auto-close the notification after 4 seconds
+                    setTimeout(async () => {
+                        try {
+                            // Close the notification by getting all notifications and closing the matching one
+                            const notifications = await registration.getNotifications({ tag: 'test-push' });
+                            notifications.forEach(notification => notification.close());
+                            
+                            pushStatus.textContent = 'Push notification closed automatically ✅';
+                            pushStatus.className = 'status info';
+                        } catch (error) {
+                            console.log('Notification may have already been closed');
+                        }
+                    }, 4000);
+                }
+            } catch (error) {
+                pushStatus.textContent = 'Failed to send test push: ' + error.message;
+                pushStatus.className = 'status error';
+            }
+        });
+
+        // Additional demo: Listen for online/offline events
+        window.addEventListener('online', () => {
+            if (Notification.permission === 'granted') {
+                new Notification('Connection Restored', {
+                    body: 'You are back online!',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌐</text></svg>'
+                });
+            }
+        });
+
+        window.addEventListener('offline', () => {
+            if (Notification.permission === 'granted') {
+                new Notification('Connection Lost', {
+                    body: 'You are now offline',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📵</text></svg>'
+                });
+            }
+        });
+
+        // Focus test - many browsers only show notifications when page is not focused
+        let focusTestTimeout = null;
+        let hasFocusChanged = false;
+        
+        // Track when the page loses and gains focus
+        window.addEventListener('blur', () => {
+            console.log('Page lost focus');
+            hasFocusChanged = true;
+        });
+        
+        window.addEventListener('focus', () => {
+            console.log('Page gained focus');
+            if (hasFocusChanged && focusTestTimeout) {
+                // Page regained focus, show notification
+                setTimeout(() => {
+                    showFocusTestNotification();
+                }, 500); // Small delay to ensure focus is properly restored
+            }
+        });
+        
+        function showFocusTestNotification() {
+            if (Notification.permission === 'granted') {
+                const notification = new Notification('👀 Welcome Back!', {
+                    body: 'You switched back to this tab! This notification appeared because you were away. Auto-closing in 4 seconds...',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle fill="%236f42c1" cx="50" cy="50" r="45"/><text y=".7em" x="50%" text-anchor="middle" font-size="40" fill="white">👀</text></svg>',
+                    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle fill="%236f42c1" cx="50" cy="50" r="45"/><text y=".7em" x="50%" text-anchor="middle" font-size="30" fill="white">🔄</text></svg>',
+                    tag: 'focus-test',
+                    vibrate: [100, 200, 100],
+                    requireInteraction: false,
+                    silent: false,
+                    timestamp: Date.now(),
+                    data: {
+                        type: 'focus-return',
+                        timestamp: Date.now()
+                    }
+                });
+
+                notification.onshow = () => {
+                    console.log('Focus return notification shown');
+                    // Update status on the page
+                    const status = document.getElementById('notificationStatus');
+                    if (status) {
+                        status.textContent = 'Welcome back notification shown! Auto-closing in 4 seconds... 👀';
+                        status.className = 'status success';
+                    }
+                };
+
+                notification.onclose = () => {
+                    console.log('Focus return notification closed');
+                    const status = document.getElementById('notificationStatus');
+                    if (status) {
+                        status.textContent = 'Welcome back notification closed automatically ✅';
+                        status.className = 'status info';
+                    }
+                };
+
+                notification.onclick = () => {
+                    console.log('Focus notification clicked');
+                    window.focus();
+                    notification.close();
+                };
+
+                // Auto-close after 4 seconds
+                setTimeout(() => {
+                    if (notification) {
+                        notification.close();
+                    }
+                }, 4000);
+                
+                // Reset the test
+                focusTestTimeout = null;
+                hasFocusChanged = false;
+            }
+        }
+
+        document.getElementById('testFocus').addEventListener('click', () => {
+            if (Notification.permission === 'granted') {
+                hasFocusChanged = false;
+                
+                // Method 1: Immediate notification (works in some browsers)
+                const immediateNotification = new Notification('🔄 Focus Test Started', {
+                    body: 'Now switch to another tab/app and come back. A "Welcome Back" notification will appear!',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle fill="%23ffc107" cx="50" cy="50" r="45"/><text y=".7em" x="50%" text-anchor="middle" font-size="40" fill="white">🔄</text></svg>',
+                    tag: 'focus-test-start',
+                    requireInteraction: false
+                });
+                
+                setTimeout(() => {
+                    immediateNotification.close();
+                }, 3000);
+                
+                // Method 2: Set up focus change detection
+                notificationStatus.textContent = 'Focus test active! Switch to another tab/app and come back to see notification 🔄';
+                notificationStatus.className = 'status info';
+                
+                // Method 3: Backup timer-based approach
+                focusTestTimeout = setTimeout(() => {
+                    if (!document.hasFocus()) {
+                        showFocusTestNotification();
+                    }
+                }, 5000);
+                
+                // Method 4: Use Page Visibility API for better detection
+                function handleVisibilityChange() {
+                    if (document.hidden) {
+                        console.log('Page is now hidden');
+                        hasFocusChanged = true;
+                    } else {
+                        console.log('Page is now visible');
+                        if (hasFocusChanged) {
+                            setTimeout(() => {
+                                showFocusTestNotification();
+                            }, 500);
+                        }
+                    }
+                }
+                
+                // Remove existing listener and add new one
+                document.removeEventListener('visibilitychange', handleVisibilityChange);
+                document.addEventListener('visibilitychange', handleVisibilityChange);
+                
+            } else {
+                alert('Please grant notification permission first!');
+            }
+        });
+
+        // Force notification - this will work regardless of focus
+        document.getElementById('forceNotification').addEventListener('click', () => {
+            if (Notification.permission === 'granted') {
+                // First blur the window to simulate background
+                window.blur();
+                
+                setTimeout(() => {
+                    const notification = new Notification('🔥 Forced Notification', {
+                        body: 'This notification was forced to appear regardless of focus! Auto-closing in 4 seconds.',
+                        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle fill="%23dc3545" cx="50" cy="50" r="45"/><text y=".7em" x="50%" text-anchor="middle" font-size="40" fill="white">🔥</text></svg>',
+                        badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle fill="%23dc3545" cx="50" cy="50" r="45"/><text y=".7em" x="50%" text-anchor="middle" font-size="30" fill="white">💥</text></svg>',
+                        tag: 'forced-notification',
+                        vibrate: [300, 100, 300],
+                        requireInteraction: false,
+                        silent: false,
+                        timestamp: Date.now(),
+                        data: {
+                            type: 'forced',
+                            timestamp: Date.now()
+                        }
+                    });
+
+                    notification.onshow = () => {
+                        console.log('Forced notification shown');
+                        notificationStatus.textContent = 'Forced notification shown! Should appear even with focus. Auto-closing in 4 seconds... 🔥';
+                        notificationStatus.className = 'status success';
+                        
+                        // Refocus the window after a short delay
+                        setTimeout(() => {
+                            window.focus();
+                        }, 1000);
+                    };
+
+                    notification.onclose = () => {
+                        console.log('Forced notification closed');
+                        notificationStatus.textContent = 'Forced notification closed automatically ✅';
+                        notificationStatus.className = 'status info';
+                    };
+
+                    notification.onclick = () => {
+                        console.log('Forced notification clicked');
+                        window.focus();
+                        notification.close();
+                    };
+
+                    // Auto-close after 4 seconds
+                    setTimeout(() => {
+                        if (notification) {
+                            notification.close();
+                        }
+                    }, 4000);
+                }, 100); // Small delay after blur
+                
+            } else {
+                alert('Please grant notification permission first!');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTL Direction Test - Force UI Direction Flag</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+
+        .section h2 {
+            margin-top: 0;
+            color: #4facfe;
+            border-bottom: 2px solid #4facfe;
+            padding-bottom: 10px;
+        }
+
+        /* Navigation Bar */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #333;
+            padding: 15px 30px;
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: #555;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        /* Card Layout */
+        .cards-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        /* List with Icons */
+        .icon-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .icon-list li {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .icon-list li:before {
+            content: "→";
+            margin-right: 10px;
+            font-weight: bold;
+            color: #4facfe;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #f5f5f5;
+            font-weight: bold;
+        }
+
+        /* Sidebar Layout */
+        .sidebar-layout {
+            display: flex;
+            gap: 20px;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .main-content {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #4facfe;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Text Direction Examples */
+        .text-examples {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .text-example {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .rtl-text {
+            direction: rtl;
+            text-align: right;
+        }
+
+        .ltr-text {
+            direction: ltr;
+            text-align: left;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 0;
+            color: #666;
+        }
+
+        .breadcrumb a {
+            color: #4facfe;
+            text-decoration: none;
+        }
+
+        .breadcrumb::after {
+            content: ">";
+            margin: 0 5px;
+        }
+
+        .breadcrumb:last-child::after {
+            display: none;
+        }
+
+        /* Media Queries for RTL */
+        [dir="rtl"] .icon-list li:before {
+            content: "←";
+            margin-left: 10px;
+            margin-right: 0;
+        }
+
+        [dir="rtl"] .card {
+            border-left: none;
+            border-right: 4px solid #4facfe;
+        }
+
+        /* Toggle Button */
+        .direction-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .direction-toggle:hover {
+            background: #3d8bfe;
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status-ltr {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rtl {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <button class="direction-toggle" onclick="toggleDirection()">
+        Toggle RTL/LTR <span class="status-indicator status-ltr" id="statusIndicator">LTR</span>
+    </button>
+
+    <div class="container">
+        <div class="header">
+            <h1>RTL Direction Test Page</h1>
+            <p>Testing --force-ui-direction flag for right-to-left layout compatibility</p>
+        </div>
+
+        <nav class="nav-bar">
+            <div class="logo">🌐 RTL Tester</div>
+            <ul class="nav-links">
+                <li><a href="#forms">Forms</a></li>
+                <li><a href="#cards">Cards</a></li>
+                <li><a href="#tables">Tables</a></li>
+                <li><a href="#layout">Layout</a></li>
+            </ul>
+        </nav>
+
+        <div class="content">
+            <!-- Breadcrumb Navigation -->
+            <div class="breadcrumb">
+                <a href="#">Home</a>
+            </div>
+            <div class="breadcrumb">
+                <a href="#">Testing</a>
+            </div>
+            <div class="breadcrumb">
+                RTL Direction
+            </div>
+
+            <!-- Text Direction Examples -->
+            <section class="section">
+                <h2>Text Direction Examples</h2>
+                <div class="text-examples">
+                    <div class="text-example ltr-text">
+                        <h3>Left-to-Right (LTR)</h3>
+                        <p>This is English text that flows from left to right. Numbers like 123, 456, and 789 should appear in the correct order.</p>
+                        <p>Email: user@example.com | Phone: +1-555-0123</p>
+                    </div>
+                    <div class="text-example rtl-text">
+                        <h3>Right-to-Left (RTL)</h3>
+                        <p>هذا نص عربي يتدفق من اليمين إلى اليسار. الأرقام مثل 123، 456، و 789 يجب أن تظهر بالترتيب الصحيح.</p>
+                        <p>אימייל: user@example.com | טלפון: +1-555-0123</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Form Section -->
+            <section class="section" id="forms">
+                <h2>Form Elements Testing</h2>
+                <form>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">First Name</label>
+                            <input type="text" id="firstName" name="firstName" placeholder="Enter your first name">
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name</label>
+                            <input type="text" id="lastName" name="lastName" placeholder="Enter your last name">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="user@example.com">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="country">Country</label>
+                            <select id="country" name="country">
+                                <option>United States</option>
+                                <option>Saudi Arabia</option>
+                                <option>Israel</option>
+                                <option>UAE</option>
+                                <option>Egypt</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" placeholder="+1-555-0123">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" name="message" rows="4" placeholder="Enter your message here..."></textarea>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary">Submit Form</button>
+                        <button type="reset" class="btn btn-secondary">Reset</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Cards Section -->
+            <section class="section" id="cards">
+                <h2>Card Layout Testing</h2>
+                <div class="cards-container">
+                    <div class="card">
+                        <h3>Card Title 1</h3>
+                        <p>This card contains sample content to test how cards behave in RTL layouts. The border should switch sides appropriately.</p>
+                        <ul class="icon-list">
+                            <li>First item with arrow</li>
+                            <li>Second item with arrow</li>
+                            <li>Third item with arrow</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>Card Title 2</h3>
+                        <p>Another card with different content. Icons and alignments should mirror correctly in RTL mode.</p>
+                        <ul class="icon-list">
+                            <li>Feature A</li>
+                            <li>Feature B</li>
+                            <li>Feature C</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>Card Title 3</h3>
+                        <p>The third card demonstrates consistent spacing and alignment across the card grid layout.</p>
+                        <ul class="icon-list">
+                            <li>Option X</li>
+                            <li>Option Y</li>
+                            <li>Option Z</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Table Section -->
+            <section class="section" id="tables">
+                <h2>Table Layout Testing</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Country</th>
+                                <th>Language</th>
+                                <th>Script Direction</th>
+                                <th>Population</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Arabic</td>
+                                <td>Saudi Arabia</td>
+                                <td>العربية</td>
+                                <td>RTL</td>
+                                <td>34.8M</td>
+                            </tr>
+                            <tr>
+                                <td>Hebrew</td>
+                                <td>Israel</td>
+                                <td>עברית</td>
+                                <td>RTL</td>
+                                <td>9.5M</td>
+                            </tr>
+                            <tr>
+                                <td>English</td>
+                                <td>United States</td>
+                                <td>English</td>
+                                <td>LTR</td>
+                                <td>331M</td>
+                            </tr>
+                            <tr>
+                                <td>Persian</td>
+                                <td>Iran</td>
+                                <td>فارسی</td>
+                                <td>RTL</td>
+                                <td>84M</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Sidebar Layout Section -->
+            <section class="section" id="layout">
+                <h2>Sidebar Layout Testing</h2>
+                <div class="sidebar-layout">
+                    <div class="sidebar">
+                        <h3>Navigation</h3>
+                        <ul class="icon-list">
+                            <li>Dashboard</li>
+                            <li>Profile Settings</li>
+                            <li>Messages</li>
+                            <li>Notifications</li>
+                            <li>Help & Support</li>
+                        </ul>
+                    </div>
+                    <div class="main-content">
+                        <h3>Main Content Area</h3>
+                        <p>This main content area demonstrates how sidebar layouts should behave in RTL mode. The sidebar should move to the right side, and content should flow appropriately.</p>
+                        <p>Key testing points:</p>
+                        <ul>
+                            <li>Sidebar position (left in LTR, right in RTL)</li>
+                            <li>Content flow and text alignment</li>
+                            <li>Icon and arrow directions</li>
+                            <li>Margin and padding adjustments</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Testing Instructions -->
+            <section class="section">
+                <h2>Testing Instructions</h2>
+                <div class="text-example">
+                    <h3>How to Test --force-ui-direction Flag</h3>
+                    <ol>
+                        <li>Open Chrome/Chromium browser</li>
+                        <li>Start with flag: <code>--force-ui-direction=rtl</code></li>
+                        <li>Load this page and observe layout changes</li>
+                        <li>Check that all elements mirror correctly</li>
+                        <li>Test with <code>--force-ui-direction=ltr</code> for comparison</li>
+                        <li>Use the toggle button above to manually switch directions</li>
+                    </ol>
+                    
+                    <h3>What to Look For</h3>
+                    <ul>
+                        <li>✅ Sidebar moves from left to right</li>
+                        <li>✅ Form elements align properly</li>
+                        <li>✅ Card borders switch sides</li>
+                        <li>✅ Icons and arrows flip direction</li>
+                        <li>✅ Text alignment adjusts correctly</li>
+                        <li>✅ Navigation elements reorder appropriately</li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        function toggleDirection() {
+            const html = document.documentElement;
+            const currentDir = html.getAttribute('dir') || 'ltr';
+            const newDir = currentDir === 'ltr' ? 'rtl' : 'ltr';
+            const statusIndicator = document.getElementById('statusIndicator');
+            
+            html.setAttribute('dir', newDir);
+            html.setAttribute('lang', newDir === 'rtl' ? 'ar' : 'en');
+            
+            // Update status indicator
+            statusIndicator.textContent = newDir.toUpperCase();
+            statusIndicator.className = newDir === 'rtl' ? 'status-indicator status-rtl' : 'status-indicator status-ltr';
+            
+            console.log(`Direction changed to: ${newDir.toUpperCase()}`);
+        }
+
+        // Log current direction on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentDir = document.documentElement.getAttribute('dir') || 'ltr';
+            console.log(`Initial direction: ${currentDir.toUpperCase()}`);
+            console.log('Use --force-ui-direction=rtl or --force-ui-direction=ltr flags to test');
+        });
+
+        // Add visual feedback for testing
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'r' && e.ctrlKey) {
+                e.preventDefault();
+                toggleDirection();
+            }
+        });
+    </script>
+</body>
+</html>

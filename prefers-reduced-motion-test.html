@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prefers Reduced Motion Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .section h2 {
+            color: #444;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        /* CSS Animations */
+        .spinning-box {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            margin: 20px auto;
+            animation: spin 2s linear infinite;
+            border-radius: 10px;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .bouncing-ball {
+            width: 50px;
+            height: 50px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            margin: 20px;
+            animation: bounce 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-30px); }
+        }
+
+        .pulsing-text {
+            text-align: center;
+            font-size: 24px;
+            color: #007bff;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* CSS Transitions */
+        .hover-button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .hover-button:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .expanding-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .expanding-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-color: #007bff;
+        }
+
+        /* Sliding elements */
+        .sliding-panel {
+            background: #28a745;
+            color: white;
+            padding: 20px;
+            margin: 10px 0;
+            transform: translateX(-100%);
+            animation: slideIn 2s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            to { transform: translateX(0); }
+        }
+
+        /* Auto-playing video styles */
+        .video-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        video {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        /* GIF container */
+        .gif-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .animated-gif {
+            max-width: 300px;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        /* Status indicators */
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .status.normal {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.reduced {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Media query for reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            .spinning-box,
+            .bouncing-ball,
+            .pulsing-text,
+            .sliding-panel {
+                animation: none;
+            }
+
+            .hover-button:hover,
+            .expanding-card:hover {
+                transform: none;
+            }
+
+            .hover-button,
+            .expanding-card {
+                transition: none;
+            }
+
+            .status.normal {
+                display: none;
+            }
+
+            .status.reduced {
+                display: block;
+            }
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            .status.reduced {
+                display: none;
+            }
+
+            .status.normal {
+                display: block;
+            }
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        /* Floating animation */
+        .floating-element {
+            background: #ffc107;
+            padding: 15px;
+            border-radius: 50%;
+            margin: 20px auto;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .instructions {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #007bff;
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+
+        code {
+            background: #f8f9fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 Prefers Reduced Motion Test Page</h1>
+        
+        <div class="instructions">
+            <h3>How to Test:</h3>
+            <p>1. <strong>Normal Mode:</strong> Load this page normally to see all animations and transitions</p>
+            <p>2. <strong>Reduced Motion Mode:</strong> Start Chrome with the flag: <code>--force-prefers-reduced-motion</code></p>
+            <p>3. Compare the behavior - animations should stop, transitions should be disabled, and auto-play videos shouldn't play</p>
+            <p>4. You can also test by enabling "Reduce motion" in your OS accessibility settings</p>
+        </div>
+
+        <!-- Status Indicator -->
+        <div class="status normal">
+            ✅ <strong>Normal Motion Mode:</strong> All animations and transitions are active
+        </div>
+        <div class="status reduced">
+            🚫 <strong>Reduced Motion Mode:</strong> Animations and transitions are disabled
+        </div>
+
+        <!-- CSS Animations Section -->
+        <div class="section">
+            <h2>🌟 CSS Animations</h2>
+            <p>These elements should stop animating when reduced motion is enabled:</p>
+            
+            <div class="spinning-box"></div>
+            <p style="text-align: center;"><em>Spinning Box</em></p>
+            
+            <div class="bouncing-ball"></div>
+            <p><em>Bouncing Ball</em></p>
+            
+            <div class="pulsing-text">Pulsing Text Effect</div>
+            
+            <div class="spinner"></div>
+            <p style="text-align: center;"><em>Loading Spinner</em></p>
+            
+            <div class="floating-element">🎈</div>
+            <p style="text-align: center;"><em>Floating Element</em></p>
+            
+            <div class="sliding-panel">
+                <strong>Sliding Panel:</strong> This panel slides in from the left
+            </div>
+        </div>
+
+        <!-- CSS Transitions Section -->
+        <div class="section">
+            <h2>⚡ CSS Transitions</h2>
+            <p>These elements should not have smooth transitions when reduced motion is enabled:</p>
+            
+            <button class="hover-button">Hover Button</button>
+            <button class="hover-button">Another Button</button>
+            <button class="hover-button">Third Button</button>
+            
+            <div class="expanding-card">
+                <h4>Expandable Card</h4>
+                <p>This card should grow and get a shadow when you hover over it (normal mode only).</p>
+            </div>
+            
+            <div class="expanding-card">
+                <h4>Another Card</h4>
+                <p>Try hovering over this card as well to see the transition effects.</p>
+            </div>
+        </div>
+
+        <!-- Auto-playing Video Section -->
+        <div class="section">
+            <h2>🎥 Auto-playing Media</h2>
+            <p>These elements should auto-play/animate in normal mode but remain static in reduced motion mode:</p>
+            
+            <!-- Animated Canvas Video Alternative -->
+            <div class="video-container">
+                <canvas id="animatedCanvas" width="400" height="200" style="border: 2px solid #007bff; border-radius: 8px; background: #f8f9fa;"></canvas>
+                <p><em>Animated Canvas - Auto-plays animation when reduced motion is NOT active</em></p>
+                <button id="toggleCanvas" class="hover-button">Start/Stop Animation</button>
+            </div>
+
+            <!-- For real video testing, you can use these examples -->
+            <div style="margin-top: 30px; padding: 20px; background: #e9ecef; border-radius: 8px;">
+                <h4>For Real Video Testing:</h4>
+                <p>Replace the src attribute below with a real video URL to test auto-play behavior:</p>
+                <video id="testVideo" controls muted loop style="max-width: 100%; height: auto; border-radius: 8px;">
+                    <!-- Example URLs you can test with:
+                    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                    <source src="https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4" type="video/mp4">
+                    -->
+                    <p>Add a video source URL to test auto-play behavior</p>
+                </video>
+                <p><em>Note: Add a real video source to test actual auto-play behavior</em></p>
+            </div>
+        </div>
+
+        <!-- Animated GIF Section -->
+        <div class="section">
+            <h2>🖼️ Animated Images</h2>
+            <p>Animated GIFs should typically be replaced with static versions when reduced motion is preferred:</p>
+            
+            <div class="gif-container">
+                <!-- Using CSS to show/hide animated vs static versions -->
+                <img class="animated-gif" src="data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH+GkNyZWF0ZWQgd2l0aCBhamF4bG9hZC5pbmZvACH5BAAKAAAAIf8LTkVUU0NBUEUyLjADAQAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQACgABACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkEAAoAAgAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkEAAoAAwAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkEAAoABAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQACgAFACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQACgAGACwAAAAAEAAQAAADMgi63P7wjRLEsAIL9pPBhRgWY8mQBwhiQLBhm2BQIQK5L9kAKBIMhNTlDGvXG0MShqkpDQAh+QQACgAHACwAAAAAEAAQAAADNQi6QTU3jJKnbH3dBhW9A6gMhlD4CUJhaUHyGw8iiQDAGRFyqiVEGWjg0Ag3M1FJIi8xFjERACH5BAAKAAgALAAAAAAQABAAAAM3CLpCO0o5mbRKnSAhfgCg4NkggiU5oWHygQEMWUEQFgMBQqy0LAeJm4iHCRNJASW6Q6IkFXdFj8MZP4gE9Z8CCBgACQAMZV4hFJ4/ACfO8W4/BDAk+w8AoG8h+t3BpMABBzMD/4wCHAaFiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp+goaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwsPExcbHyMnKy8zNzs/Q0dLT1NXW19jZ2tvc3d7f4OHi4+Tl5ufo6err7O3u7/Dx8vP09fb3+Pn6+/z9/v8AA8" alt="Loading animation" style="width: 50px; height: 50px;">
+                <p><em>Animated Loading GIF (should be static when reduced motion is active)</em></p>
+            </div>
+        </div>
+
+        <!-- JavaScript Animations Section -->
+        <div class="section">
+            <h2>🔧 JavaScript-Controlled Animations</h2>
+            <p>Click the button to trigger JavaScript animations (these should respect the reduced motion preference):</p>
+            
+            <button id="animateBtn" class="hover-button">Trigger JS Animation</button>
+            <div id="jsAnimationTarget" style="width: 100px; height: 100px; background: #fd7e14; margin: 20px auto; border-radius: 10px;"></div>
+            
+            <button id="scrollBtn" class="hover-button">Smooth Scroll to Top</button>
+        </div>
+
+        <!-- Media Query Test -->
+        <div class="section">
+            <h2>📱 Media Query Detection</h2>
+            <p>Current preference detected by CSS media query:</p>
+            <div id="mediaQueryResult" style="padding: 15px; border: 2px solid #007bff; border-radius: 5px; font-weight: bold; text-align: center;"></div>
+            
+            <p>JavaScript detection:</p>
+            <div id="jsDetectionResult" style="padding: 15px; border: 2px solid #28a745; border-radius: 5px; font-weight: bold; text-align: center;"></div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript to handle reduced motion preferences
+        function checkReducedMotion() {
+            return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        }
+
+        // Canvas animation variables
+        let animationId;
+        let isCanvasAnimating = false;
+        let canvasAngle = 0;
+
+        function drawCanvas() {
+            const canvas = document.getElementById('animatedCanvas');
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw animated background
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 100);
+            gradient.addColorStop(0, `hsl(${canvasAngle}, 70%, 80%)`);
+            gradient.addColorStop(1, `hsl(${canvasAngle + 60}, 70%, 60%)`);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw rotating circle
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(canvasAngle * Math.PI / 180);
+            
+            // Main circle
+            ctx.beginPath();
+            ctx.arc(0, 0, 40, 0, 2 * Math.PI);
+            ctx.fillStyle = '#007bff';
+            ctx.fill();
+            
+            // Smaller orbiting circle
+            ctx.beginPath();
+            ctx.arc(60, 0, 15, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ff6b6b';
+            ctx.fill();
+            
+            ctx.restore();
+            
+            // Draw "AUTO-PLAYING" text
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('AUTO-PLAYING ANIMATION', centerX, centerY + 80);
+            
+            canvasAngle += 2;
+        }
+
+        function startCanvasAnimation() {
+            if (isCanvasAnimating) return;
+            
+            isCanvasAnimating = true;
+            function animate() {
+                drawCanvas();
+                if (isCanvasAnimating) {
+                    animationId = requestAnimationFrame(animate);
+                }
+            }
+            animate();
+        }
+
+        function stopCanvasAnimation() {
+            isCanvasAnimating = false;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            
+            // Draw static version
+            const canvas = document.getElementById('animatedCanvas');
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Static background
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Static circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 40, 0, 2 * Math.PI);
+            ctx.fillStyle = '#6c757d';
+            ctx.fill();
+            
+            // Static text
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('STATIC IMAGE', centerX, centerY + 80);
+        }
+
+        function updateCanvasBasedOnMotionPreference() {
+            const isReduced = checkReducedMotion();
+            
+            if (isReduced) {
+                stopCanvasAnimation();
+            } else {
+                startCanvasAnimation();
+            }
+        }
+
+        function updateDetectionResults() {
+            const jsResult = document.getElementById('jsDetectionResult');
+            const isReduced = checkReducedMotion();
+            
+            jsResult.textContent = isReduced 
+                ? '🚫 JavaScript detects: REDUCED MOTION' 
+                : '✅ JavaScript detects: NORMAL MOTION';
+            jsResult.style.backgroundColor = isReduced ? '#f8d7da' : '#d4edda';
+            jsResult.style.color = isReduced ? '#721c24' : '#155724';
+        }
+
+        // Update CSS media query result
+        function updateMediaQueryResult() {
+            const cssResult = document.getElementById('mediaQueryResult');
+            // This will be handled by CSS, but we can also detect it with JS
+            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            cssResult.textContent = reducedMotion 
+                ? '🚫 CSS Media Query: REDUCED MOTION' 
+                : '✅ CSS Media Query: NORMAL MOTION';
+            cssResult.style.backgroundColor = reducedMotion ? '#f8d7da' : '#d4edda';
+            cssResult.style.color = reducedMotion ? '#721c24' : '#155724';
+        }
+
+        // JavaScript animation that respects reduced motion
+        document.getElementById('animateBtn').addEventListener('click', function() {
+            const target = document.getElementById('jsAnimationTarget');
+            const isReduced = checkReducedMotion();
+            
+            if (isReduced) {
+                // Instant change for reduced motion
+                target.style.backgroundColor = target.style.backgroundColor === 'rgb(253, 126, 20)' ? '#20c997' : '#fd7e14';
+                target.style.transform = target.style.transform === 'scale(1.2)' ? 'scale(1)' : 'scale(1.2)';
+            } else {
+                // Animated change for normal motion
+                target.style.transition = 'all 0.5s ease';
+                target.style.backgroundColor = target.style.backgroundColor === 'rgb(253, 126, 20)' ? '#20c997' : '#fd7e14';
+                target.style.transform = target.style.transform === 'scale(1.2)' ? 'scale(1)' : 'scale(1.2)';
+            }
+        });
+
+        // Smooth scroll that respects reduced motion
+        document.getElementById('scrollBtn').addEventListener('click', function() {
+            const isReduced = checkReducedMotion();
+            
+            if (isReduced) {
+                // Instant scroll for reduced motion
+                window.scrollTo(0, 0);
+            } else {
+                // Smooth scroll for normal motion
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+        });
+
+        // Listen for changes in motion preference
+        window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', function() {
+            updateDetectionResults();
+            updateMediaQueryResult();
+            updateCanvasBasedOnMotionPreference();
+        });
+
+        // Canvas toggle button
+        document.getElementById('toggleCanvas').addEventListener('click', function() {
+            if (isCanvasAnimating) {
+                stopCanvasAnimation();
+                this.textContent = 'Start Animation';
+            } else {
+                startCanvasAnimation();
+                this.textContent = 'Stop Animation';
+            }
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDetectionResults();
+            updateMediaQueryResult();
+            updateCanvasBasedOnMotionPreference();
+            
+            // Update button text based on initial state
+            const toggleBtn = document.getElementById('toggleCanvas');
+            const isReduced = checkReducedMotion();
+            toggleBtn.textContent = isReduced ? 'Start Animation' : 'Stop Animation';
+        });
+
+        // Update every few seconds to catch any changes
+        setInterval(function() {
+            updateDetectionResults();
+            updateMediaQueryResult();
+            updateCanvasBasedOnMotionPreference();
+        }, 2000);
+    </script>
+</body>
+</html>

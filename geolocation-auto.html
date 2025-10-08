@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Geolocation Request</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .status {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .loading {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+        .success {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        .location-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .retry-btn {
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .retry-btn:hover {
+            background-color: #1565c0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 Automatic Geolocation Request</h1>
+        <p>This page automatically requests your location when loaded.</p>
+        
+        <div id="status" class="status loading">
+            📍 Requesting your location...
+        </div>
+        
+        <div id="locationInfo" class="location-info" style="display: none;">
+            <!-- Location details will be displayed here -->
+        </div>
+        
+        <button id="retryBtn" class="retry-btn" style="display: none;" onclick="requestLocation()">
+            Try Again
+        </button>
+    </div>
+
+    <script>
+        // Function to request geolocation
+        function requestLocation() {
+            const statusDiv = document.getElementById('status');
+            const locationInfo = document.getElementById('locationInfo');
+            const retryBtn = document.getElementById('retryBtn');
+            
+            // Reset UI
+            statusDiv.className = 'status loading';
+            statusDiv.innerHTML = '📍 Requesting your location...';
+            locationInfo.style.display = 'none';
+            retryBtn.style.display = 'none';
+            
+            // Check if geolocation is supported
+            if (!navigator.geolocation) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = '❌ Geolocation is not supported by this browser.';
+                retryBtn.style.display = 'inline-block';
+                return;
+            }
+            
+            // Options for geolocation request
+            const options = {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            };
+            
+            // Request current position
+            navigator.geolocation.getCurrentPosition(
+                // Success callback
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const accuracy = position.coords.accuracy;
+                    const timestamp = new Date(position.timestamp);
+                    
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = '✅ Location retrieved successfully!';
+                    
+                    locationInfo.innerHTML = `
+                        <h3>📍 Your Location Details:</h3>
+                        <p><strong>Latitude:</strong> ${lat.toFixed(6)}</p>
+                        <p><strong>Longitude:</strong> ${lon.toFixed(6)}</p>
+                        <p><strong>Accuracy:</strong> ±${accuracy.toFixed(0)} meters</p>
+                        <p><strong>Timestamp:</strong> ${timestamp.toLocaleString()}</p>
+                        <p><strong>Google Maps:</strong> <a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank">View on Map</a></p>
+                    `;
+                    locationInfo.style.display = 'block';
+                    retryBtn.style.display = 'inline-block';
+                },
+                
+                // Error callback
+                function(error) {
+                    let errorMessage = '';
+                    
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = '❌ Location access denied by user.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = '❌ Location information is unavailable.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = '❌ Location request timed out.';
+                            break;
+                        default:
+                            errorMessage = '❌ An unknown error occurred while retrieving location.';
+                            break;
+                    }
+                    
+                    statusDiv.className = 'status error';
+                    statusDiv.innerHTML = errorMessage;
+                    retryBtn.style.display = 'inline-block';
+                },
+                
+                options
+            );
+        }
+        
+        // Automatically request location when page loads
+        window.addEventListener('load', function() {
+            // Small delay to ensure the page is fully rendered
+            setTimeout(requestLocation, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autoplay Policy Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        
+        .test-section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .media-container {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: white;
+            border-radius: 5px;
+            border-left: 4px solid #007acc;
+        }
+        
+        video, audio {
+            width: 100%;
+            max-width: 400px;
+            margin: 10px 0;
+        }
+        
+        .controls {
+            margin: 10px 0;
+        }
+        
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            background-color: #007acc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #005a9e;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #e8f4fd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .policy-flags {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-family: monospace;
+        }
+        
+        .policy-flags h3 {
+            margin-top: 0;
+            font-family: Arial, sans-serif;
+        }
+        
+        .results {
+            margin-top: 20px;
+        }
+        
+        .result-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎵 Autoplay Policy Test Page</h1>
+    
+    <div class="info">
+        <strong>Purpose:</strong> This page tests Chrome's <code>--autoplay-policy</code> flag behavior with different media autoplay scenarios.
+    </div>
+    
+    <div class="policy-flags">
+        <h3>Chrome Autoplay Policy Flags:</h3>
+        <div><strong>--autoplay-policy=no-user-gesture-required</strong><br>
+        Allows autoplay without any user interaction</div>
+        <div><strong>--autoplay-policy=user-gesture-required</strong><br>
+        Requires user gesture (click, tap, etc.) before autoplay</div>
+        <div><strong>--autoplay-policy=document-user-activation-required</strong><br>
+        Requires user activation on the document before autoplay</div>
+    </div>
+    
+    <div class="results" id="results">
+        <h3>Test Results:</h3>
+    </div>
+    
+    <!-- Test 1: Video with autoplay attribute -->
+    <div class="test-section">
+        <h2>Test 1: Video with autoplay attribute</h2>
+        <div class="media-container">
+            <video id="video1" autoplay muted loop controls>
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="status" id="video1-status">Loading...</div>
+        </div>
+    </div>
+    
+    <!-- Test 2: Video with autoplay (no muted) -->
+    <div class="test-section">
+        <h2>Test 2: Video with autoplay (with audio)</h2>
+        <div class="media-container">
+            <video id="video2" autoplay loop controls>
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="status" id="video2-status">Loading...</div>
+        </div>
+    </div>
+    
+    <!-- Test 3: Audio with autoplay -->
+    <div class="test-section">
+        <h2>Test 3: Audio with autoplay</h2>
+        <div class="media-container">
+            <audio id="audio1" autoplay loop controls>
+                <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav" type="audio/wav">
+                <source src="https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav" type="audio/wav">
+                Your browser does not support the audio tag.
+            </audio>
+            <div class="status" id="audio1-status">Loading...</div>
+        </div>
+    </div>
+    
+    <!-- Test 4: Programmatic play without user gesture -->
+    <div class="test-section">
+        <h2>Test 4: Programmatic play (no user gesture)</h2>
+        <div class="media-container">
+            <video id="video3" muted loop controls>
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="controls">
+                <button onclick="playVideo3()">Attempt Auto Play</button>
+            </div>
+            <div class="status" id="video3-status">Ready to test</div>
+        </div>
+    </div>
+    
+    <!-- Test 5: Programmatic play with user gesture -->
+    <div class="test-section">
+        <h2>Test 5: Programmatic play (with user gesture)</h2>
+        <div class="media-container">
+            <video id="video4" muted loop controls>
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="controls">
+                <button onclick="playVideo4()">Play with User Gesture</button>
+                <button onclick="pauseVideo4()">Pause</button>
+            </div>
+            <div class="status" id="video4-status">Ready to test</div>
+        </div>
+    </div>
+    
+    <!-- Test 6: Multiple videos autoplay test -->
+    <div class="test-section">
+        <h2>Test 6: Multiple Videos Autoplay</h2>
+        <div class="media-container">
+            <video id="video5" autoplay muted loop controls style="width: 48%; display: inline-block;">
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+            </video>
+            <video id="video6" autoplay muted loop controls style="width: 48%; display: inline-block; margin-left: 2%;">
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" type="video/mp4">
+            </video>
+            <div class="status" id="multiple-status">Loading multiple videos...</div>
+        </div>
+    </div>
+    
+    <!-- Test 7: Intersection Observer autoplay -->
+    <div class="test-section">
+        <h2>Test 7: Intersection Observer Autoplay</h2>
+        <div class="media-container">
+            <video id="video7" muted loop controls>
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="controls">
+                <button onclick="startIntersectionTest()">Start Intersection Test</button>
+            </div>
+            <div class="status" id="video7-status">Scroll down to trigger autoplay when video becomes visible</div>
+        </div>
+        <div style="height: 1000px; background: linear-gradient(to bottom, #f0f0f0, #e0e0e0); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+            Scroll back up to see the intersection observer test
+        </div>
+    </div>
+    
+    <script>
+        let testResults = [];
+        
+        function logResult(test, status, message) {
+            const timestamp = new Date().toLocaleTimeString();
+            testResults.push({
+                test: test,
+                status: status,
+                message: message,
+                timestamp: timestamp
+            });
+            updateResultsDisplay();
+        }
+        
+        function updateResultsDisplay() {
+            const resultsDiv = document.getElementById('results');
+            let html = '<h3>Test Results:</h3>';
+            
+            testResults.forEach(result => {
+                const className = result.status === 'success' ? 'success' : 
+                                result.status === 'error' ? 'error' : 'warning';
+                html += `<div class="result-item ${className}">
+                    [${result.timestamp}] ${result.test}: ${result.message}
+                </div>`;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        // Test 1: Video with autoplay attribute (muted)
+        const video1 = document.getElementById('video1');
+        video1.addEventListener('loadstart', () => {
+            document.getElementById('video1-status').textContent = 'Video loading...';
+        });
+        
+        video1.addEventListener('canplay', () => {
+            if (video1.paused) {
+                logResult('Video Autoplay (muted)', 'error', 'Autoplay blocked - video is paused');
+                document.getElementById('video1-status').textContent = 'Autoplay blocked - video paused';
+            } else {
+                logResult('Video Autoplay (muted)', 'success', 'Autoplay working - video playing');
+                document.getElementById('video1-status').textContent = 'Autoplay working - video playing';
+            }
+        });
+        
+        video1.addEventListener('play', () => {
+            logResult('Video Autoplay (muted)', 'success', 'Video started playing');
+            document.getElementById('video1-status').textContent = 'Video playing';
+        });
+        
+        video1.addEventListener('error', (e) => {
+            logResult('Video Autoplay (muted)', 'error', 'Video error: ' + e.message);
+            document.getElementById('video1-status').textContent = 'Video error';
+        });
+        
+        // Test 2: Video with autoplay (with audio)
+        const video2 = document.getElementById('video2');
+        video2.addEventListener('canplay', () => {
+            if (video2.paused) {
+                logResult('Video Autoplay (with audio)', 'warning', 'Autoplay blocked - audio requires user gesture');
+                document.getElementById('video2-status').textContent = 'Autoplay blocked - audio needs user gesture';
+            } else {
+                logResult('Video Autoplay (with audio)', 'success', 'Autoplay working with audio');
+                document.getElementById('video2-status').textContent = 'Autoplay working with audio';
+            }
+        });
+        
+        video2.addEventListener('play', () => {
+            logResult('Video Autoplay (with audio)', 'success', 'Video with audio started playing');
+        });
+        
+        // Test 3: Audio with autoplay
+        const audio1 = document.getElementById('audio1');
+        audio1.addEventListener('canplay', () => {
+            if (audio1.paused) {
+                logResult('Audio Autoplay', 'warning', 'Audio autoplay blocked');
+                document.getElementById('audio1-status').textContent = 'Audio autoplay blocked';
+            } else {
+                logResult('Audio Autoplay', 'success', 'Audio autoplay working');
+                document.getElementById('audio1-status').textContent = 'Audio autoplay working';
+            }
+        });
+        
+        audio1.addEventListener('play', () => {
+            logResult('Audio Autoplay', 'success', 'Audio started playing');
+        });
+        
+        // Test 4: Programmatic play without user gesture
+        function playVideo3() {
+            const video3 = document.getElementById('video3');
+            const promise = video3.play();
+            
+            if (promise !== undefined) {
+                promise.then(() => {
+                    logResult('Programmatic Play (no gesture)', 'success', 'Video played successfully');
+                    document.getElementById('video3-status').textContent = 'Video playing programmatically';
+                }).catch(error => {
+                    logResult('Programmatic Play (no gesture)', 'error', 'Play failed: ' + error.message);
+                    document.getElementById('video3-status').textContent = 'Play failed: ' + error.message;
+                });
+            }
+        }
+        
+        // Test 5: Programmatic play with user gesture
+        function playVideo4() {
+            const video4 = document.getElementById('video4');
+            const promise = video4.play();
+            
+            if (promise !== undefined) {
+                promise.then(() => {
+                    logResult('Programmatic Play (with gesture)', 'success', 'Video played with user gesture');
+                    document.getElementById('video4-status').textContent = 'Video playing with user gesture';
+                }).catch(error => {
+                    logResult('Programmatic Play (with gesture)', 'error', 'Play failed: ' + error.message);
+                    document.getElementById('video4-status').textContent = 'Play failed: ' + error.message;
+                });
+            }
+        }
+        
+        function pauseVideo4() {
+            const video4 = document.getElementById('video4');
+            video4.pause();
+            document.getElementById('video4-status').textContent = 'Video paused';
+        }
+        
+        // Test 6: Multiple videos
+        const video5 = document.getElementById('video5');
+        const video6 = document.getElementById('video6');
+        
+        let multipleVideosLoaded = 0;
+        function checkMultipleVideos() {
+            multipleVideosLoaded++;
+            if (multipleVideosLoaded === 2) {
+                const playing5 = !video5.paused;
+                const playing6 = !video6.paused;
+                
+                if (playing5 && playing6) {
+                    logResult('Multiple Videos Autoplay', 'success', 'Both videos autoplaying');
+                    document.getElementById('multiple-status').textContent = 'Both videos autoplaying';
+                } else if (playing5 || playing6) {
+                    logResult('Multiple Videos Autoplay', 'warning', 'Only one video autoplaying');
+                    document.getElementById('multiple-status').textContent = 'Only one video autoplaying';
+                } else {
+                    logResult('Multiple Videos Autoplay', 'error', 'Neither video autoplaying');
+                    document.getElementById('multiple-status').textContent = 'Neither video autoplaying';
+                }
+            }
+        }
+        
+        video5.addEventListener('canplay', checkMultipleVideos);
+        video6.addEventListener('canplay', checkMultipleVideos);
+        
+        // Test 7: Intersection Observer
+        function startIntersectionTest() {
+            const video7 = document.getElementById('video7');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const promise = video7.play();
+                        if (promise !== undefined) {
+                            promise.then(() => {
+                                logResult('Intersection Observer Autoplay', 'success', 'Video played when visible');
+                                document.getElementById('video7-status').textContent = 'Video playing when visible';
+                            }).catch(error => {
+                                logResult('Intersection Observer Autoplay', 'error', 'Intersection play failed: ' + error.message);
+                                document.getElementById('video7-status').textContent = 'Intersection play failed';
+                            });
+                        }
+                    } else {
+                        video7.pause();
+                        document.getElementById('video7-status').textContent = 'Video paused when not visible';
+                    }
+                });
+            }, { threshold: 0.5 });
+            
+            observer.observe(video7);
+            document.getElementById('video7-status').textContent = 'Intersection observer active - scroll to test';
+        }
+        
+        // Page load detection
+        window.addEventListener('load', () => {
+            logResult('Page Load', 'success', 'Page loaded successfully');
+            
+            // Check autoplay policy if available
+            if ('getAutoplayPolicy' in HTMLMediaElement.prototype) {
+                logResult('Autoplay Policy API', 'success', 'Autoplay Policy API available');
+            } else {
+                logResult('Autoplay Policy API', 'warning', 'Autoplay Policy API not available');
+            }
+        });
+        
+        // Document user activation detection
+        let hasUserActivation = false;
+        document.addEventListener('click', () => {
+            if (!hasUserActivation) {
+                hasUserActivation = true;
+                logResult('User Activation', 'success', 'Document has received user activation');
+            }
+        });
+        
+        document.addEventListener('keydown', () => {
+            if (!hasUserActivation) {
+                hasUserActivation = true;
+                logResult('User Activation', 'success', 'Document has received user activation (keyboard)');
+            }
+        });
+        
+        // Check for user activation API
+        if ('userActivation' in navigator) {
+            setInterval(() => {
+                const status = document.getElementById('results');
+                if (navigator.userActivation.hasBeenActive) {
+                    // Only log once
+                    if (!hasUserActivation) {
+                        hasUserActivation = true;
+                        logResult('User Activation API', 'success', 'Navigator.userActivation.hasBeenActive: true');
+                    }
+                }
+            }, 1000);
+        } else {
+            logResult('User Activation API', 'warning', 'Navigator.userActivation not available');
+        }
+    </script>
+</body>
+</html>

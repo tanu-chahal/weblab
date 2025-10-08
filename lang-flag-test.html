@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Flag Test - --lang</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        h2 {
+            color: #3498db;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        
+        .instructions {
+            background: #e8f6f3;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #1abc9c;
+        }
+        
+        .command-example {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+            white-space: pre-line;
+        }
+        
+        .test-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .language-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .language-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        
+        .language-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        
+        .language-code {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: #f1f3f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+            color: #d73502;
+        }
+        
+        .detection-result {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        
+        .multi-lang-text {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .text-sample {
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+        }
+        
+        .flag-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .format-example {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 3px solid #6c757d;
+        }
+        
+        .rtl-test {
+            direction: rtl;
+            text-align: right;
+            background: #fff8e1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .browser-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #2196f3;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 Language Flag Test (--lang)</h1>
+        
+        <div class="instructions">
+            <h2>How to Test the --lang Flag</h2>
+            <p>The <code>--lang</code> flag sets the language that Chrome runs in, affecting both the browser UI and how websites detect user language preferences.</p>
+            
+            <div class="command-example">
+# Close all Chrome instances first, then try these examples:
+
+# Spanish
+chrome --lang=es
+
+# French  
+chrome --lang=fr
+
+# German
+chrome --lang=de
+
+# Japanese
+chrome --lang=ja
+
+# Arabic (RTL)
+chrome --lang=ar
+
+# Chinese Simplified
+chrome --lang=zh-CN
+
+# Chinese Traditional
+chrome --lang=zh-TW
+
+# Russian
+chrome --lang=ru
+
+# Portuguese (Brazil)
+chrome --lang=pt-BR
+
+# Korean
+chrome --lang=ko
+            </div>
+            
+            <p><strong>What happens:</strong> Chrome's UI (menus, dialogs, etc.) will appear in the specified language, and websites will detect this language preference.</p>
+        </div>
+        
+        <div class="test-section">
+            <h2>Current Language Detection</h2>
+            <div id="language-detection" class="detection-result">
+                <p>🔍 Detecting current language settings...</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Common Language Codes</h2>
+            <p>Here are some popular language codes you can test with the --lang flag:</p>
+            
+            <div class="language-grid">
+                <div class="language-card">
+                    <span class="flag-icon">🇺🇸</span>
+                    <strong>English (US)</strong><br>
+                    <span class="language-code">en-US</span>
+                </div>
+                <div class="language-card">
+                    <span class="flag-icon">🇬🇧</span>
+                    <strong>English (UK)</strong><br>
+                    <span class="language-code">en-GB</span>
+                </div>
+                <div class="language-card">
+                    <span class="flag-icon">🇪🇸</span>
+                    <strong>Spanish</strong><br>
+                    <span class="language-code">es</span>
+                </div>
+                <div class="language-card">
+                    <span class="flag-icon">🇫🇷</span>
+                    <strong>French</strong><br>
+                    <span class="language-code">fr</span>
+                </div>
+                <div class="language-card">
+                    <span class="flag-icon">🇩🇪</span>
+                    <strong>German</strong><br>
+                    <span class="language-code">de</span>
+                </div>
+                <div class="language-card">
+                    <span class="flag-icon">🇯🇵</span>
+                    <strong>Japanese</strong><br>
+                    <span class="language-code">ja</span>
+                </div>
+                <div class="language-card">
+                    <span class="flag-icon">🇨🇳</span>
+                    <strong>Chinese (Simplified)</strong><br>
+                    <span class="language-code">zh-CN</span>
+                </div>
+                <div class="language-card">
+                    <span class="flag-icon">🇹🇼</span>
+                    <strong>Chinese (Traditional)</strong><br>
+                    <span class="language-code">zh-TW</span>
+                </div>
+                <div class="language-card">
+                    <span class="flag-icon">🇷🇺</span>
+                    <strong>Russian</strong><br>
+                    <span class="language-code">ru</span>
+                </div>
+                <div class="language-card">
+                    <span class="flag-icon">🇰🇷</span>
+                    <strong>Korean</strong><br>
+                    <span class="language-code">ko</span>
+                </div>
+                <div class="language-card">
+                    <span class="flag-icon">🇸🇦</span>
+                    <strong>Arabic</strong><br>
+                    <span class="language-code">ar</span>
+                </div>
+                <div class="language-card">
+                    <span class="flag-icon">🇧🇷</span>
+                    <strong>Portuguese (Brazil)</strong><br>
+                    <span class="language-code">pt-BR</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Multi-Language Text Samples</h2>
+            <p>These text samples help visualize how different languages would appear:</p>
+            
+            <div class="multi-lang-text">
+                <div class="text-sample">
+                    <strong>English</strong><br>
+                    Hello, World!<br>
+                    <small>Welcome to our website</small>
+                </div>
+                <div class="text-sample">
+                    <strong>Spanish</strong><br>
+                    ¡Hola, Mundo!<br>
+                    <small>Bienvenido a nuestro sitio web</small>
+                </div>
+                <div class="text-sample">
+                    <strong>French</strong><br>
+                    Bonjour le monde!<br>
+                    <small>Bienvenue sur notre site</small>
+                </div>
+                <div class="text-sample">
+                    <strong>German</strong><br>
+                    Hallo Welt!<br>
+                    <small>Willkommen auf unserer Website</small>
+                </div>
+                <div class="text-sample">
+                    <strong>Japanese</strong><br>
+                    こんにちは世界！<br>
+                    <small>私たちのウェブサイトへようこそ</small>
+                </div>
+                <div class="text-sample">
+                    <strong>Chinese</strong><br>
+                    你好世界！<br>
+                    <small>欢迎访问我们的网站</small>
+                </div>
+                <div class="text-sample">
+                    <strong>Russian</strong><br>
+                    Привет, мир!<br>
+                    <small>Добро пожаловать на наш сайт</small>
+                </div>
+                <div class="text-sample">
+                    <strong>Korean</strong><br>
+                    안녕하세요, 세계!<br>
+                    <small>저희 웹사이트에 오신 것을 환영합니다</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>RTL Language Test</h2>
+            <p>Right-to-left languages like Arabic and Hebrew:</p>
+            
+            <div class="rtl-test">
+                <strong>Arabic Text Example:</strong><br>
+                مرحبا بالعالم! أهلا وسهلا بكم في موقعنا الإلكتروني
+            </div>
+            
+            <div class="rtl-test">
+                <strong>Hebrew Text Example:</strong><br>
+                שלום עולם! ברוכים הבאים לאתר שלנו
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Number and Date Formatting</h2>
+            <p>Different locales format numbers and dates differently:</p>
+            
+            <div id="locale-formatting" class="format-example">
+                <p>Loading locale-specific formatting...</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Expected Behavior</h2>
+            
+            <div class="browser-info">
+                <h3>🎯 With --lang flag active:</h3>
+                <ul>
+                    <li>✅ Chrome's UI (menus, dialogs, error messages) appear in specified language</li>
+                    <li>✅ <code>navigator.language</code> reports the specified language</li>
+                    <li>✅ <code>navigator.languages</code> array starts with specified language</li>
+                    <li>✅ HTTP <code>Accept-Language</code> header includes specified language</li>
+                    <li>✅ Websites can detect and respond to language preference</li>
+                    <li>✅ Date/time formatting may change based on locale</li>
+                </ul>
+            </div>
+            
+            <div class="browser-info">
+                <h3>📋 Testing Checklist:</h3>
+                <ol>
+                    <li>Close all Chrome instances</li>
+                    <li>Launch Chrome with <code>--lang=LANGUAGE_CODE</code></li>
+                    <li>Check if Chrome's UI changed language</li>
+                    <li>Open this page and check detection results</li>
+                    <li>Visit a multilingual website to see if it detects the language</li>
+                    <li>Try right-click context menus (should be in specified language)</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Browser Language Information</h2>
+            <div id="browser-info" class="detection-result info">
+                <p>Loading browser language information...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function updateLanguageDetection() {
+            const detectionDiv = document.getElementById('language-detection');
+            const browserInfoDiv = document.getElementById('browser-info');
+            const localeDiv = document.getElementById('locale-formatting');
+            
+            // Primary language detection
+            const primaryLang = navigator.language || navigator.userLanguage;
+            const allLanguages = navigator.languages || [primaryLang];
+            
+            let detectionHTML = '<h3>🔍 Current Language Detection Results:</h3>';
+            detectionHTML += '<div style="display: grid; gap: 10px;">';
+            
+            // Primary language
+            detectionHTML += `<div><strong>Primary Language:</strong> <span class="language-code">${primaryLang}</span></div>`;
+            
+            // All languages
+            detectionHTML += '<div><strong>Language Preferences:</strong><br>';
+            allLanguages.forEach((lang, index) => {
+                detectionHTML += `<span class="language-code" style="margin: 2px;">${index + 1}. ${lang}</span> `;
+            });
+            detectionHTML += '</div>';
+            
+            // Check if --lang flag might be active
+            const isPrimaryEnglish = primaryLang.startsWith('en');
+            const isSystemDefault = primaryLang === 'en-US' || primaryLang === 'en';
+            
+            if (!isSystemDefault) {
+                detectionHTML += '<div class="success">🎯 <strong>Non-default language detected!</strong> The --lang flag may be active.</div>';
+            } else {
+                detectionHTML += '<div class="info">💡 <strong>Default language detected.</strong> Try launching Chrome with --lang=LANGUAGE_CODE to test.</div>';
+            }
+            
+            detectionHTML += '</div>';
+            detectionDiv.innerHTML = detectionHTML;
+            
+            // Browser information
+            let browserHTML = '<h3>🌐 Detailed Browser Language Info:</h3>';
+            browserHTML += '<ul>';
+            browserHTML += `<li><strong>navigator.language:</strong> <code>${navigator.language || 'undefined'}</code></li>`;
+            browserHTML += `<li><strong>navigator.userLanguage:</strong> <code>${navigator.userLanguage || 'undefined'}</code></li>`;
+            browserHTML += `<li><strong>navigator.languages:</strong> <code>[${(navigator.languages || []).join(', ')}]</code></li>`;
+            
+            // Get timezone
+            try {
+                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                browserHTML += `<li><strong>Timezone:</strong> <code>${timezone}</code></li>`;
+            } catch (e) {
+                browserHTML += `<li><strong>Timezone:</strong> <code>Unable to detect</code></li>`;
+            }
+            
+            browserHTML += '</ul>';
+            browserInfoDiv.innerHTML = browserHTML;
+            
+            // Locale formatting examples
+            const now = new Date();
+            const number = 1234567.89;
+            
+            let localeHTML = '<h4>🔢 Locale-Specific Formatting Examples:</h4>';
+            localeHTML += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">';
+            
+            // Test different locales
+            const testLocales = ['en-US', 'en-GB', 'de-DE', 'fr-FR', 'ja-JP', 'zh-CN', 'ar-SA', 'ru-RU'];
+            
+            testLocales.forEach(locale => {
+                try {
+                    const formattedDate = now.toLocaleDateString(locale);
+                    const formattedNumber = number.toLocaleString(locale);
+                    const currency = number.toLocaleString(locale, { style: 'currency', currency: locale === 'ja-JP' ? 'JPY' : locale === 'en-GB' ? 'GBP' : locale === 'de-DE' ? 'EUR' : 'USD' });
+                    
+                    localeHTML += `<div style="background: white; padding: 10px; border-radius: 5px; border: 1px solid #ddd;">`;
+                    localeHTML += `<strong>${locale}</strong><br>`;
+                    localeHTML += `Date: ${formattedDate}<br>`;
+                    localeHTML += `Number: ${formattedNumber}<br>`;
+                    localeHTML += `Currency: ${currency}`;
+                    localeHTML += `</div>`;
+                } catch (e) {
+                    // Skip if locale not supported
+                }
+            });
+            
+            localeHTML += '</div>';
+            
+            // Current locale formatting
+            localeHTML += '<div style="margin-top: 15px; padding: 10px; background: #e8f5e8; border-radius: 5px;">';
+            localeHTML += '<strong>🎯 Current Browser Locale Formatting:</strong><br>';
+            try {
+                localeHTML += `Date: ${now.toLocaleDateString()}<br>`;
+                localeHTML += `Time: ${now.toLocaleTimeString()}<br>`;
+                localeHTML += `Number: ${number.toLocaleString()}<br>`;
+                localeHTML += `Currency: ${number.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}`;
+            } catch (e) {
+                localeHTML += 'Error formatting with current locale';
+            }
+            localeHTML += '</div>';
+            
+            localeDiv.innerHTML = localeHTML;
+        }
+        
+        // Update detection when page loads
+        document.addEventListener('DOMContentLoaded', updateLanguageDetection);
+        
+        // Also update every few seconds to catch any changes
+        setInterval(updateLanguageDetection, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clipboard Permission Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .write-btn {
+            background-color: #007bff;
+            color: white;
+        }
+        .write-btn:hover {
+            background-color: #0056b3;
+        }
+        .read-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        .read-btn:hover {
+            background-color: #1e7e34;
+        }
+        .check-btn {
+            background-color: #6c757d;
+            color: white;
+        }
+        .check-btn:hover {
+            background-color: #545b62;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        .note {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ffeaa7;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Clipboard Permission Demo</h1>
+        
+        <div class="note">
+            <strong>Note:</strong> This demo shows how clipboard permissions work in modern browsers. 
+            When you first try to write to the clipboard, the browser will ask for permission.
+        </div>
+
+        <div class="input-group">
+            <label for="textInput">Text to copy to clipboard:</label>
+            <input type="text" id="textInput" placeholder="Enter text to copy..." value="Hello, this is a clipboard test!">
+        </div>
+
+        <div class="button-group">
+            <button class="write-btn" onclick="writeToClipboard()">
+                📝 Copy Text to Clipboard (Triggers Permission)
+            </button>
+            
+            <button class="read-btn" onclick="readFromClipboard()">
+                📖 Read from Clipboard
+            </button>
+            
+            <button class="check-btn" onclick="checkClipboardPermission()">
+                🔍 Check Clipboard Permission Status
+            </button>
+        </div>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+        }
+
+        async function writeToClipboard() {
+            try {
+                const text = document.getElementById('textInput').value;
+                
+                if (!text.trim()) {
+                    showStatus('Please enter some text to copy!', 'error');
+                    return;
+                }
+
+                // This will trigger the permission popup on first use
+                await navigator.clipboard.writeText(text);
+                showStatus(`✅ Successfully copied "${text}" to clipboard!`, 'success');
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                
+                if (err.name === 'NotAllowedError') {
+                    showStatus('❌ Clipboard permission denied. Please allow clipboard access and try again.', 'error');
+                } else if (err.name === 'NotSupportedError') {
+                    showStatus('❌ Clipboard API not supported in this browser.', 'error');
+                } else {
+                    showStatus(`❌ Failed to copy to clipboard: ${err.message}`, 'error');
+                }
+            }
+        }
+
+        async function readFromClipboard() {
+            try {
+                // Reading from clipboard also requires permission
+                const text = await navigator.clipboard.readText();
+                showStatus(`📖 Clipboard content: "${text}"`, 'success');
+            } catch (err) {
+                console.error('Failed to read: ', err);
+                
+                if (err.name === 'NotAllowedError') {
+                    showStatus('❌ Clipboard read permission denied.', 'error');
+                } else if (err.name === 'NotSupportedError') {
+                    showStatus('❌ Clipboard API not supported in this browser.', 'error');
+                } else {
+                    showStatus(`❌ Failed to read from clipboard: ${err.message}`, 'error');
+                }
+            }
+        }
+
+        async function checkClipboardPermission() {
+            try {
+                // Check permission status using the Permissions API
+                const writePermission = await navigator.permissions.query({ name: 'clipboard-write' });
+                const readPermission = await navigator.permissions.query({ name: 'clipboard-read' });
+                
+                showStatus(
+                    `🔍 Permission Status:\n` +
+                    `Write: ${writePermission.state}\n` +
+                    `Read: ${readPermission.state}`, 
+                    'info'
+                );
+            } catch (err) {
+                showStatus('❌ Could not check clipboard permissions.', 'error');
+            }
+        }
+
+        // Check if the Clipboard API is supported
+        if (!navigator.clipboard) {
+            showStatus('❌ Clipboard API is not supported in this browser. Try using HTTPS or a modern browser.', 'error');
+        }
+
+        // Inform user about HTTPS requirement
+        if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+            showStatus('⚠️ Clipboard API requires HTTPS to work properly.', 'error');
+        }
+    </script>
+</body>
+</html>
