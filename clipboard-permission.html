@@ -138,82 +138,244 @@
     </div>
 
     <script>
+        // Browser detection
+        function getBrowserInfo() {
+            const userAgent = navigator.userAgent;
+            const isFirefox = userAgent.includes('Firefox');
+            const isSafari = userAgent.includes('Safari') && !userAgent.includes('Chrome');
+            const isChrome = userAgent.includes('Chrome') && !userAgent.includes('Edge');
+            const isEdge = userAgent.includes('Edge') || userAgent.includes('Edg');
+            
+            return { isFirefox, isSafari, isChrome, isEdge };
+        }
+
         function showStatus(message, type = 'info') {
             const statusDiv = document.getElementById('status');
             statusDiv.className = `status ${type}`;
-            statusDiv.textContent = message;
+            statusDiv.innerHTML = message.replace(/\n/g, '<br>');
             statusDiv.style.display = 'block';
         }
 
-        async function writeToClipboard() {
+        // Fallback clipboard write for older browsers
+        function fallbackCopyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
             try {
-                const text = document.getElementById('textInput').value;
-                
-                if (!text.trim()) {
-                    showStatus('Please enter some text to copy!', 'error');
-                    return;
-                }
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                return successful;
+            } catch (err) {
+                document.body.removeChild(textArea);
+                throw err;
+            }
+        }
 
-                // This will trigger the permission popup on first use
-                await navigator.clipboard.writeText(text);
-                showStatus(`✅ Successfully copied "${text}" to clipboard!`, 'success');
+        async function writeToClipboard() {
+            const browser = getBrowserInfo();
+            const text = document.getElementById('textInput').value;
+            
+            if (!text.trim()) {
+                showStatus('Please enter some text to copy!', 'error');
+                return;
+            }
+
+            let browserName = browser.isFirefox ? 'Firefox' : 
+                             browser.isSafari ? 'Safari' : 
+                             browser.isChrome ? 'Chrome' : 
+                             browser.isEdge ? 'Edge' : 'Unknown';
+
+            try {
+                // Try modern Clipboard API first
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(text);
+                    showStatus(`✅ [${browserName}] Successfully copied "${text}" to clipboard using Clipboard API!`, 'success');
+                } else {
+                    // Fallback for browsers without Clipboard API
+                    const success = fallbackCopyToClipboard(text);
+                    if (success) {
+                        showStatus(`✅ [${browserName}] Successfully copied "${text}" to clipboard using fallback method!`, 'success');
+                    } else {
+                        throw new Error('Fallback copy failed');
+                    }
+                }
             } catch (err) {
                 console.error('Failed to copy: ', err);
                 
+                let errorMessage = `❌ [${browserName}] `;
+                
                 if (err.name === 'NotAllowedError') {
-                    showStatus('❌ Clipboard permission denied. Please allow clipboard access and try again.', 'error');
+                    if (browser.isFirefox) {
+                        errorMessage += 'Clipboard permission denied. Firefox may require user interaction or site to be in allow list.';
+                    } else if (browser.isSafari) {
+                        errorMessage += 'Clipboard permission denied. Safari requires explicit user permission and secure context.';
+                    } else {
+                        errorMessage += 'Clipboard permission denied. Please allow clipboard access and try again.';
+                    }
                 } else if (err.name === 'NotSupportedError') {
-                    showStatus('❌ Clipboard API not supported in this browser.', 'error');
+                    errorMessage += 'Clipboard API not supported. ';
+                    if (browser.isSafari) {
+                        errorMessage += 'Safari may require newer version or secure context.';
+                    } else if (browser.isFirefox) {
+                        errorMessage += 'Firefox may require enabling clipboard permissions in about:config.';
+                    }
                 } else {
-                    showStatus(`❌ Failed to copy to clipboard: ${err.message}`, 'error');
+                    errorMessage += `Failed to copy to clipboard: ${err.message}`;
                 }
+                
+                showStatus(errorMessage, 'error');
             }
         }
 
         async function readFromClipboard() {
+            const browser = getBrowserInfo();
+            let browserName = browser.isFirefox ? 'Firefox' : 
+                             browser.isSafari ? 'Safari' : 
+                             browser.isChrome ? 'Chrome' : 
+                             browser.isEdge ? 'Edge' : 'Unknown';
+
             try {
-                // Reading from clipboard also requires permission
-                const text = await navigator.clipboard.readText();
-                showStatus(`📖 Clipboard content: "${text}"`, 'success');
+                if (navigator.clipboard && navigator.clipboard.readText) {
+                    const text = await navigator.clipboard.readText();
+                    showStatus(`📖 [${browserName}] Clipboard content: "${text}"`, 'success');
+                } else {
+                    throw new Error('Clipboard read not supported');
+                }
             } catch (err) {
                 console.error('Failed to read: ', err);
                 
+                let errorMessage = `❌ [${browserName}] `;
+                
                 if (err.name === 'NotAllowedError') {
-                    showStatus('❌ Clipboard read permission denied.', 'error');
-                } else if (err.name === 'NotSupportedError') {
-                    showStatus('❌ Clipboard API not supported in this browser.', 'error');
+                    if (browser.isFirefox) {
+                        errorMessage += 'Clipboard read permission denied. Firefox requires explicit permission for reading.';
+                    } else if (browser.isSafari) {
+                        errorMessage += 'Clipboard read permission denied. Safari requires user gesture and permission.';
+                    } else {
+                        errorMessage += 'Clipboard read permission denied.';
+                    }
+                } else if (err.name === 'NotSupportedError' || err.message.includes('not supported')) {
+                    if (browser.isSafari) {
+                        errorMessage += 'Clipboard read not supported in this Safari version.';
+                    } else if (browser.isFirefox) {
+                        errorMessage += 'Clipboard read may not be enabled in Firefox.';
+                    } else {
+                        errorMessage += 'Clipboard read not supported.';
+                    }
                 } else {
-                    showStatus(`❌ Failed to read from clipboard: ${err.message}`, 'error');
+                    errorMessage += `Failed to read from clipboard: ${err.message}`;
                 }
+                
+                showStatus(errorMessage, 'error');
             }
         }
 
         async function checkClipboardPermission() {
+            const browser = getBrowserInfo();
+            let browserName = browser.isFirefox ? 'Firefox' : 
+                             browser.isSafari ? 'Safari' : 
+                             browser.isChrome ? 'Chrome' : 
+                             browser.isEdge ? 'Edge' : 'Unknown';
+
             try {
-                // Check permission status using the Permissions API
-                const writePermission = await navigator.permissions.query({ name: 'clipboard-write' });
-                const readPermission = await navigator.permissions.query({ name: 'clipboard-read' });
+                let statusMessage = `🔍 [${browserName}] Permission Status:<br>`;
                 
-                showStatus(
-                    `🔍 Permission Status:\n` +
-                    `Write: ${writePermission.state}\n` +
-                    `Read: ${readPermission.state}`, 
-                    'info'
-                );
+                // Check if Permissions API is supported
+                if (!navigator.permissions) {
+                    statusMessage += `Permissions API not supported in ${browserName}.<br>`;
+                    statusMessage += 'Permission status cannot be checked programmatically.';
+                    showStatus(statusMessage, 'info');
+                    return;
+                }
+
+                try {
+                    const writePermission = await navigator.permissions.query({ name: 'clipboard-write' });
+                    statusMessage += `Write: ${writePermission.state}<br>`;
+                } catch (writeErr) {
+                    if (browser.isFirefox) {
+                        statusMessage += `Write: Not queryable in Firefox<br>`;
+                    } else if (browser.isSafari) {
+                        statusMessage += `Write: Not queryable in Safari<br>`;
+                    } else {
+                        statusMessage += `Write: Query failed (${writeErr.message})<br>`;
+                    }
+                }
+
+                try {
+                    const readPermission = await navigator.permissions.query({ name: 'clipboard-read' });
+                    statusMessage += `Read: ${readPermission.state}<br>`;
+                } catch (readErr) {
+                    if (browser.isFirefox) {
+                        statusMessage += `Read: Not queryable in Firefox<br>`;
+                    } else if (browser.isSafari) {
+                        statusMessage += `Read: Not queryable in Safari<br>`;
+                    } else {
+                        statusMessage += `Read: Query failed (${readErr.message})<br>`;
+                    }
+                }
+
+                // Add browser-specific notes
+                if (browser.isFirefox) {
+                    statusMessage += `<br><strong>Firefox Note:</strong> Clipboard permissions are handled differently. `;
+                    statusMessage += `Permission popups appear when attempting clipboard operations.`;
+                } else if (browser.isSafari) {
+                    statusMessage += `<br><strong>Safari Note:</strong> Clipboard access requires user gesture and `;
+                    statusMessage += `may not show traditional permission popups in all versions.`;
+                }
+                
+                showStatus(statusMessage, 'info');
             } catch (err) {
-                showStatus('❌ Could not check clipboard permissions.', 'error');
+                let errorMessage = `❌ [${browserName}] Could not check clipboard permissions: ${err.message}`;
+                if (browser.isFirefox) {
+                    errorMessage += '<br>Firefox handles clipboard permissions internally.';
+                } else if (browser.isSafari) {
+                    errorMessage += '<br>Safari may not support permission queries.';
+                }
+                showStatus(errorMessage, 'error');
             }
         }
 
-        // Check if the Clipboard API is supported
-        if (!navigator.clipboard) {
-            showStatus('❌ Clipboard API is not supported in this browser. Try using HTTPS or a modern browser.', 'error');
+        // Initialize and show browser info
+        function initializePage() {
+            const browser = getBrowserInfo();
+            let browserName = browser.isFirefox ? 'Firefox' : 
+                             browser.isSafari ? 'Safari' : 
+                             browser.isChrome ? 'Chrome' : 
+                             browser.isEdge ? 'Edge' : 'Unknown';
+
+            // Check if the Clipboard API is supported
+            if (!navigator.clipboard) {
+                showStatus(`❌ [${browserName}] Clipboard API is not supported. Try using HTTPS or a modern browser.`, 'error');
+                return;
+            }
+
+            // Inform user about HTTPS requirement
+            if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+                showStatus(`⚠️ [${browserName}] Clipboard API requires HTTPS to work properly.`, 'error');
+                return;
+            }
+
+            // Show initial browser info
+            let initMessage = `🌐 Detected Browser: ${browserName}<br>`;
+            initMessage += `📋 Clipboard API: ${navigator.clipboard ? 'Supported' : 'Not Supported'}<br>`;
+            
+            if (browser.isFirefox) {
+                initMessage += `<br><strong>Firefox:</strong> May require user interaction for clipboard access.`;
+            } else if (browser.isSafari) {
+                initMessage += `<br><strong>Safari:</strong> Requires secure context and user gestures for clipboard access.`;
+            }
+            
+            showStatus(initMessage, 'info');
         }
 
-        // Inform user about HTTPS requirement
-        if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-            showStatus('⚠️ Clipboard API requires HTTPS to work properly.', 'error');
-        }
+        // Initialize when page loads
+        window.addEventListener('load', initializePage);
     </script>
 </body>
 </html>
