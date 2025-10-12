@@ -81,32 +81,62 @@
     </div>
 
     <script>
+        // Browser detection
+        function getBrowserInfo() {
+            const userAgent = navigator.userAgent;
+            const isFirefox = userAgent.includes('Firefox');
+            const isSafari = userAgent.includes('Safari') && !userAgent.includes('Chrome');
+            const isChrome = userAgent.includes('Chrome') && !userAgent.includes('Edge');
+            const isEdge = userAgent.includes('Edge') || userAgent.includes('Edg');
+            
+            return { isFirefox, isSafari, isChrome, isEdge };
+        }
+
         // Function to request geolocation
         function requestLocation() {
             const statusDiv = document.getElementById('status');
             const locationInfo = document.getElementById('locationInfo');
             const retryBtn = document.getElementById('retryBtn');
+            const browser = getBrowserInfo();
+            
+            let browserName = browser.isFirefox ? 'Firefox' : 
+                             browser.isSafari ? 'Safari' : 
+                             browser.isChrome ? 'Chrome' : 
+                             browser.isEdge ? 'Edge' : 'Unknown';
             
             // Reset UI
             statusDiv.className = 'status loading';
-            statusDiv.innerHTML = '📍 Requesting your location...';
+            statusDiv.innerHTML = `📍 [${browserName}] Requesting your location...`;
             locationInfo.style.display = 'none';
             retryBtn.style.display = 'none';
             
             // Check if geolocation is supported
             if (!navigator.geolocation) {
                 statusDiv.className = 'status error';
-                statusDiv.innerHTML = '❌ Geolocation is not supported by this browser.';
+                statusDiv.innerHTML = `❌ [${browserName}] Geolocation is not supported by this browser.`;
                 retryBtn.style.display = 'inline-block';
                 return;
             }
             
-            // Options for geolocation request
-            const options = {
+            // Browser-specific options for geolocation request
+            let options = {
                 enableHighAccuracy: true,
-                timeout: 10000,
+                timeout: 15000, // Increased timeout for Firefox
                 maximumAge: 0
             };
+            
+            // Firefox-specific adjustments
+            if (browser.isFirefox) {
+                // Firefox sometimes needs longer timeout and may work better with less strict accuracy
+                options.timeout = 20000;
+                options.enableHighAccuracy = false; // Try with less strict accuracy first
+            }
+            
+            // Safari-specific adjustments
+            if (browser.isSafari) {
+                // Safari may need different timeout settings
+                options.timeout = 12000;
+            }
             
             // Request current position
             navigator.geolocation.getCurrentPosition(
@@ -118,53 +148,130 @@
                     const timestamp = new Date(position.timestamp);
                     
                     statusDiv.className = 'status success';
-                    statusDiv.innerHTML = '✅ Location retrieved successfully!';
+                    statusDiv.innerHTML = `✅ [${browserName}] Location retrieved successfully!`;
+                    
+                    // Additional position details for debugging
+                    const altitude = position.coords.altitude;
+                    const altitudeAccuracy = position.coords.altitudeAccuracy;
+                    const heading = position.coords.heading;
+                    const speed = position.coords.speed;
+                    
+                    let additionalInfo = '';
+                    if (altitude !== null) additionalInfo += `<p><strong>Altitude:</strong> ${altitude.toFixed(2)} meters</p>`;
+                    if (altitudeAccuracy !== null) additionalInfo += `<p><strong>Altitude Accuracy:</strong> ±${altitudeAccuracy.toFixed(0)} meters</p>`;
+                    if (heading !== null) additionalInfo += `<p><strong>Heading:</strong> ${heading.toFixed(2)}°</p>`;
+                    if (speed !== null) additionalInfo += `<p><strong>Speed:</strong> ${speed.toFixed(2)} m/s</p>`;
                     
                     locationInfo.innerHTML = `
-                        <h3>📍 Your Location Details:</h3>
+                        <h3>📍 Your Location Details (${browserName}):</h3>
                         <p><strong>Latitude:</strong> ${lat.toFixed(6)}</p>
                         <p><strong>Longitude:</strong> ${lon.toFixed(6)}</p>
                         <p><strong>Accuracy:</strong> ±${accuracy.toFixed(0)} meters</p>
                         <p><strong>Timestamp:</strong> ${timestamp.toLocaleString()}</p>
+                        ${additionalInfo}
                         <p><strong>Google Maps:</strong> <a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank">View on Map</a></p>
+                        <p><strong>Browser:</strong> ${browserName}</p>
                     `;
                     locationInfo.style.display = 'block';
                     retryBtn.style.display = 'inline-block';
+                    retryBtn.innerHTML = 'Get Location Again';
                 },
                 
                 // Error callback
                 function(error) {
-                    let errorMessage = '';
+                    let errorMessage = `❌ [${browserName}] `;
                     
                     switch(error.code) {
                         case error.PERMISSION_DENIED:
-                            errorMessage = '❌ Location access denied by user.';
+                            errorMessage += 'Location access denied by user.';
+                            if (browser.isFirefox) {
+                                errorMessage += '<br><small>Firefox: Check if location sharing is enabled in preferences.</small>';
+                            } else if (browser.isSafari) {
+                                errorMessage += '<br><small>Safari: Check location services in System Preferences.</small>';
+                            }
                             break;
                         case error.POSITION_UNAVAILABLE:
-                            errorMessage = '❌ Location information is unavailable.';
+                            errorMessage += 'Location information is unavailable.';
+                            if (browser.isFirefox) {
+                                errorMessage += '<br><small>Firefox: This may happen if location services are disabled.</small>';
+                            }
                             break;
                         case error.TIMEOUT:
-                            errorMessage = '❌ Location request timed out.';
+                            errorMessage += 'Location request timed out.';
+                            if (browser.isFirefox) {
+                                errorMessage += '<br><small>Firefox: Try again, Firefox sometimes needs multiple attempts.</small>';
+                            }
                             break;
                         default:
-                            errorMessage = '❌ An unknown error occurred while retrieving location.';
+                            errorMessage += `An unknown error occurred: ${error.message || 'No additional details'}`;
                             break;
                     }
                     
                     statusDiv.className = 'status error';
                     statusDiv.innerHTML = errorMessage;
                     retryBtn.style.display = 'inline-block';
+                    retryBtn.innerHTML = browser.isFirefox ? 'Try Again (Firefox)' : 'Try Again';
                 },
                 
                 options
             );
         }
         
+        // Function to check permissions (where supported)
+        async function checkGeolocationPermission() {
+            const browser = getBrowserInfo();
+            let browserName = browser.isFirefox ? 'Firefox' : 
+                             browser.isSafari ? 'Safari' : 
+                             browser.isChrome ? 'Chrome' : 
+                             browser.isEdge ? 'Edge' : 'Unknown';
+            
+            if (navigator.permissions) {
+                try {
+                    const permission = await navigator.permissions.query({name: 'geolocation'});
+                    console.log(`[${browserName}] Geolocation permission status: ${permission.state}`);
+                    return permission.state;
+                } catch (error) {
+                    console.log(`[${browserName}] Could not check geolocation permission: ${error.message}`);
+                    return 'unknown';
+                }
+            } else {
+                console.log(`[${browserName}] Permissions API not supported`);
+                return 'unknown';
+            }
+        }
+        
+        // Initialize page with browser info
+        function initializePage() {
+            const browser = getBrowserInfo();
+            let browserName = browser.isFirefox ? 'Firefox' : 
+                             browser.isSafari ? 'Safari' : 
+                             browser.isChrome ? 'Chrome' : 
+                             browser.isEdge ? 'Edge' : 'Unknown';
+            
+            console.log(`Detected browser: ${browserName}`);
+            console.log('Geolocation supported:', !!navigator.geolocation);
+            console.log('HTTPS:', location.protocol === 'https:');
+            console.log('Localhost:', location.hostname === 'localhost');
+            
+            // Check if we're on HTTPS or localhost (required for some browsers)
+            if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+                const statusDiv = document.getElementById('status');
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `⚠️ [${browserName}] Geolocation may require HTTPS to work properly.`;
+                document.getElementById('retryBtn').style.display = 'inline-block';
+                return;
+            }
+            
+            // Check permissions first
+            checkGeolocationPermission().then(permissionState => {
+                console.log(`Permission state: ${permissionState}`);
+                // Small delay to ensure the page is fully rendered, then request location
+                setTimeout(requestLocation, 500);
+            });
+        }
+        
         // Automatically request location when page loads
-        window.addEventListener('load', function() {
-            // Small delay to ensure the page is fully rendered
-            setTimeout(requestLocation, 500);
-        });
+        window.addEventListener('load', initializePage);
     </script>
 </body>
 </html>
