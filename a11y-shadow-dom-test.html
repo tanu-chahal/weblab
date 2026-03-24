@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A11y Shadow DOM Test — WCAG 2.1 AA Issues</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f0f4f8;
+      color: #1a1a1a;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      background: #1e293b;
+      color: #f1f5f9;
+      padding: 24px 32px;
+    }
+    .page-header h1 { margin: 0 0 8px; font-size: 1.6rem; }
+    .page-header p  { margin: 0; font-size: 0.9rem; color: #94a3b8; }
+
+    /* ── Layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      padding: 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    /* ── Section wrappers ── */
+    .zone {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+    }
+    .zone-header {
+      padding: 16px 20px;
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .zone-header.outside { background: #fef3c7; color: #78350f; border-bottom: 2px solid #fcd34d; }
+    .zone-header.inside  { background: #ede9fe; color: #4c1d95; border-bottom: 2px solid #a78bfa; }
+    .zone-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+
+    /* ── Issue card ── */
+    .issue-card {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .issue-label {
+      background: #f8fafc;
+      padding: 8px 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #475569;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .issue-label .wcag-tag {
+      background: #fee2e2;
+      color: #991b1b;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.7rem;
+    }
+    .issue-label .issue-name {
+      background: #fef9c3;
+      color: #713f12;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.7rem;
+    }
+    .issue-demo {
+      padding: 16px;
+    }
+
+    /* ── Badge ── */
+    .badge-fail {
+      display: inline-block;
+      background: #dc2626;
+      color: #fff;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      vertical-align: middle;
+      letter-spacing: .4px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="page-header">
+  <h1>♿ A11y Shadow DOM Test Page</h1>
+  <p>
+    Each card is a self-contained component with a deliberate WCAG 2.1 AA violation.
+    <strong style="color:#f1f5f9">Left column</strong> = regular DOM &nbsp;|&nbsp;
+    <strong style="color:#c4b5fd">Right column</strong> = Shadow DOM.
+    Use this page to verify your a11y tool detects issues inside and outside shadow roots.
+  </p>
+</header>
+
+<div class="layout">
+
+  <!-- ════════════════════════════════════
+       LEFT COLUMN — Regular (light) DOM
+  ════════════════════════════════════ -->
+  <div class="zone" id="outside-shadow-zone">
+    <div class="zone-header outside">
+      ☀️ Outside Shadow DOM
+      <span style="font-weight:400;font-size:.8rem">(regular DOM elements)</span>
+    </div>
+    <div class="zone-body">
+
+      <!-- 1. Image without alt -->
+      <div class="issue-card" id="outside-img-no-alt">
+        <div class="issue-label">
+          <span class="badge-fail">FAIL</span>
+          <span class="issue-name">Missing alt text on img</span>
+          <span class="wcag-tag">1.1.1 Non-text Content</span>
+        </div>
+        <div class="issue-demo">
+          <p style="margin:0 0 8px;font-size:.85rem;color:#64748b">
+            The &lt;img&gt; below has no <code>alt</code> attribute.
+          </p>
+          <!-- ❌ VIOLATION: img without alt -->
+          <img id="outside-img-no-alt" src="https://placehold.co/160x80/6366f1/ffffff?text=No+Alt" width="160" height="80" />
+        </div>
+      </div>
+
+      <!-- 2. Low contrast text -->
+      <div class="issue-card" id="outside-low-contrast">
+        <div class="issue-label">
+          <span class="badge-fail">FAIL</span>
+          <span class="issue-name">Insufficient colour contrast</span>
+          <span class="wcag-tag">1.4.3 Contrast (Min)</span>
+        </div>
+        <div class="issue-demo">
+          <p style="margin:0 0 8px;font-size:.85rem;color:#64748b">
+            Text below has a contrast ratio of ~1.5:1 (requires 4.5:1).
+          </p>
+          <!-- ❌ VIOLATION: #ccc text on #fff background ≈ 1.6:1 -->
+          <p id="outside-low-contrast-text" style="color:#cccccc; background:#ffffff; padding:8px; border:1px solid #eee; margin:0; border-radius:4px;">
+            This text is very hard to read due to low contrast.
+          </p>
+        </div>
+      </div>
+
+      <!-- 3. Input without label -->
+      <div class="issue-card" id="outside-input-no-label">
+        <div class="issue-label">
+          <span class="badge-fail">FAIL</span>
+          <span class="issue-name">Form input without label</span>
+          <span class="wcag-tag">1.3.1 Info &amp; Relationships · 3.3.2 Labels</span>
+        </div>
+        <div class="issue-demo">
+          <p style="margin:0 0 8px;font-size:.85rem;color:#64748b">
+            This &lt;input&gt; has no &lt;label&gt;, <code>aria-label</code>, or <code>aria-labelledby</code>.
+          </p>
+          <!-- ❌ VIOLATION: unlabelled input -->
+          <input id="outside-input-no-label" type="text" placeholder="Enter your name" style="padding:8px;border:1px solid #cbd5e1;border-radius:4px;width:100%;" />
+        </div>
+      </div>
+
+      <!-- 4. Button with no accessible name -->
+      <div class="issue-card" id="outside-btn-no-name">
+        <div class="issue-label">
+          <span class="badge-fail">FAIL</span>
+          <span class="issue-name">Button with no accessible name</span>
+          <span class="wcag-tag">4.1.2 Name, Role, Value</span>
+        </div>
+        <div class="issue-demo">
+          <p style="margin:0 0 8px;font-size:.85rem;color:#64748b">
+            Icon-only button — no text, no <code>aria-label</code>, no <code>title</code>.
+          </p>
+          <!-- ❌ VIOLATION: icon button with zero accessible name -->
+          <button id="outside-btn-no-name" style="font-size:1.4rem;padding:6px 12px;cursor:pointer;border:1px solid #cbd5e1;border-radius:4px;background:#f1f5f9;">
+            🔍
+          </button>
+        </div>
+      </div>
+
+      <!-- 5. Non-descriptive link text -->
+      <div class="issue-card" id="outside-link-generic">
+        <div class="issue-label">
+          <span class="badge-fail">FAIL</span>
+          <span class="issue-name">Non-descriptive link text</span>
+          <span class="wcag-tag">2.4.4 Link Purpose (In Context)</span>
+        </div>
+        <div class="issue-demo">
+          <p style="margin:0 0 8px;font-size:.85rem;color:#64748b">
+            "Click here" / "Read more" links give no context about destination.
+          </p>
+          <!-- ❌ VIOLATION: vague link text -->
+          <p id="outside-link-generic-text" style="margin:0;">
+            To learn about accessibility standards, <a id="outside-link-click-here" href="#">click here</a>. For detailed guides, <a id="outside-link-read-more" href="#">read more</a>.
+          </p>
+        </div>
+      </div>
+
+      <!-- 6. Skipped heading level -->
+      <div class="issue-card" id="outside-heading-skip">
+        <div class="issue-label">
+          <span class="badge-fail">FAIL</span>
+          <span class="issue-name">Skipped heading levels</span>
+          <span class="wcag-tag">1.3.1 Info &amp; Relationships</span>
+        </div>
+        <div class="issue-demo">
+          <p style="margin:0 0 8px;font-size:.85rem;color:#64748b">
+            Heading order jumps from H2 straight to H5 — breaks document outline.
+          </p>
+          <!-- ❌ VIOLATION: heading hierarchy skip h2 → h5 -->
+          <h2 id="outside-heading-h2" style="margin:0 0 4px;font-size:1rem;">Section Title (H2)</h2>
+          <h5 id="outside-heading-h5" style="margin:0;font-size:.85rem;color:#64748b;">Sub-subsection (H5) — skips H3 and H4</h5>
+        </div>
+      </div>
+
+      <!-- 7. Table without headers -->
+      <div class="issue-card" id="outside-table-no-headers">
+        <div class="issue-label">
+          <span class="badge-fail">FAIL</span>
+          <span class="issue-name">Data table without &lt;th&gt; headers</span>
+          <span class="wcag-tag">1.3.1 Info &amp; Relationships</span>
+        </div>
+        <div class="issue-demo">
+          <p style="margin:0 0 8px;font-size:.85rem;color:#64748b">
+            All cells are &lt;td&gt; — no &lt;th&gt; or <code>scope</code> attribute.
+          </p>
+          <!-- ❌ VIOLATION: data table, all <td>, no <th> -->
+          <table id="outside-table-no-headers" style="width:100%;border-collapse:collapse;font-size:.85rem;">
+            <tr>
+              <td style="border:1px solid #cbd5e1;padding:6px 8px;background:#f8fafc;">Name</td>
+              <td style="border:1px solid #cbd5e1;padding:6px 8px;background:#f8fafc;">Role</td>
+              <td style="border:1px solid #cbd5e1;padding:6px 8px;background:#f8fafc;">Status</td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #cbd5e1;padding:6px 8px;">Alice</td>
+              <td style="border:1px solid #cbd5e1;padding:6px 8px;">Admin</td>
+              <td style="border:1px solid #cbd5e1;padding:6px 8px;">Active</td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #cbd5e1;padding:6px 8px;">Bob</td>
+              <td style="border:1px solid #cbd5e1;padding:6px 8px;">Editor</td>
+              <td style="border:1px solid #cbd5e1;padding:6px 8px;">Inactive</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- 8. Div used as button (no role, no keyboard) -->
+      <div class="issue-card" id="outside-div-button">
+        <div class="issue-label">
+          <span class="badge-fail">FAIL</span>
+          <span class="issue-name">&lt;div&gt; masquerading as a button</span>
+          <span class="wcag-tag">4.1.2 Name, Role, Value · 2.1.1 Keyboard</span>
+        </div>
+        <div class="issue-demo">
+          <p style="margin:0 0 8px;font-size:.85rem;color:#64748b">
+            Clickable &lt;div&gt; with no <code>role="button"</code>, no <code>tabindex</code>, no keyboard handler.
+          </p>
+          <!-- ❌ VIOLATION: div with onclick, no role/keyboard support -->
+          <div id="outside-div-button" onclick="alert('clicked')" style="display:inline-block;padding:8px 16px;background:#4f46e5;color:#fff;border-radius:6px;cursor:pointer;font-size:.9rem;">
+            Submit Form
+          </div>
+        </div>
+      </div>
+
+      <!-- 9. Colour as only means of conveying info -->
+      <div class="issue-card" id="outside-color-only">
+        <div class="issue-label">
+          <span class="badge-fail">FAIL</span>
+          <span class="issue-name">Colour as the only visual indicator</span>
+          <span class="wcag-tag">1.4.1 Use of Colour</span>
+        </div>
+        <div class="issue-demo">
+          <p style="margin:0 0 8px;font-size:.85rem;color:#64748b">
+            Status is shown only through colour; no icon, label, or pattern.
+          </p>
+          <!-- ❌ VIOLATION: status conveyed by colour alone -->
+          <ul id="outside-color-only-list" style="list-style:none;margin:0;padding:0;display:flex;gap:12px;font-size:.85rem;">
+            <li><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#22c55e;vertical-align:middle;margin-right:4px;"></span> Alice</li>
+            <li><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#ef4444;vertical-align:middle;margin-right:4px;"></span> Bob</li>
+            <li><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#f59e0b;vertical-align:middle;margin-right:4px;"></span> Carol</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 10. Positive tabindex -->
+      <div class="issue-card" id="outside-positive-tabindex">
+        <div class="issue-label">
+          <span class="badge-fail">FAIL</span>
+          <span class="issue-name">Positive tabindex values</span>
+          <span class="wcag-tag">2.4.3 Focus Order</span>
+        </div>
+        <div class="issue-demo">
+          <p style="margin:0 0 8px;font-size:.85rem;color:#64748b">
+            <code>tabindex="3"</code>, <code>tabindex="1"</code>, <code>tabindex="2"</code> —
+            breaks the natural focus order.
+          </p>
+          <!-- ❌ VIOLATION: positive tabindex breaks focus order -->
+          <div id="outside-tabindex-group" style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button id="outside-tabindex-3" tabindex="3" style="padding:6px 12px;border:1px solid #cbd5e1;border-radius:4px;background:#f1f5f9;cursor:pointer;">Third (tab=3)</button>
+            <button id="outside-tabindex-1" tabindex="1" style="padding:6px 12px;border:1px solid #cbd5e1;border-radius:4px;background:#f1f5f9;cursor:pointer;">First (tab=1)</button>
+            <button id="outside-tabindex-2" tabindex="2" style="padding:6px 12px;border:1px solid #cbd5e1;border-radius:4px;background:#f1f5f9;cursor:pointer;">Second (tab=2)</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.zone-body -->
+  </div><!-- /#outside-shadow-zone -->
+
+
+  <!-- ════════════════════════════════════
+       RIGHT COLUMN — Shadow DOM
+  ════════════════════════════════════ -->
+  <div class="zone" id="inside-shadow-zone">
+    <div class="zone-header inside">
+      🌑 Inside Shadow DOM
+      <span style="font-weight:400;font-size:.8rem">(Web Components with open shadow roots)</span>
+    </div>
+    <div class="zone-body">
+
+      <!-- Each custom element renders its issue-card markup inside a shadow root -->
+
+      <a11y-img-no-alt></a11y-img-no-alt>
+      <a11y-low-contrast></a11y-low-contrast>
+      <a11y-input-no-label></a11y-input-no-label>
+      <a11y-btn-no-name></a11y-btn-no-name>
+      <a11y-link-generic></a11y-link-generic>
+      <a11y-heading-skip></a11y-heading-skip>
+      <a11y-table-no-headers></a11y-table-no-headers>
+      <a11y-div-button></a11y-div-button>
+      <a11y-color-only></a11y-color-only>
+      <a11y-no-focus-visible></a11y-no-focus-visible>
+
+    </div>
+  </div>
+
+</div><!-- /.layout -->
+
+
+<script>
+  /* ─────────────────────────────────────────────────────────────
+     Shared helper — builds an issue-card inside a shadow root.
+     Each component receives:
+       badgeText   : e.g. "FAIL"
+       issueName   : short label
+       wcagTag     : criterion reference
+       demoHTML    : the offending markup (injected as innerHTML)
+  ───────────────────────────────────────────────────────────── */
+  const SHARED_STYLES = `
+    :host { display: block; }
+    .issue-card {
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+    .issue-label {
+      background: #f8fafc;
+      padding: 8px 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #475569;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .badge-fail {
+      display: inline-block;
+      background: #dc2626;
+      color: #fff;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      letter-spacing: .4px;
+    }
+    .wcag-tag {
+      background: #fee2e2;
+      color: #991b1b;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.7rem;
+    }
+    .issue-name {
+      background: #fef9c3;
+      color: #713f12;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.7rem;
+    }
+    .issue-demo {
+      padding: 16px;
+    }
+    .hint {
+      margin: 0 0 8px;
+      font-size: .85rem;
+      color: #64748b;
+    }
+  `;
+
+  function buildShadowCard(host, { issueName, wcagTag, demoHTML }) {
+    const shadow = host.attachShadow({ mode: 'open' });
+    shadow.innerHTML = `
+      <style>${SHARED_STYLES}</style>
+      <div class="issue-card">
+        <div class="issue-label">
+          <span class="badge-fail">FAIL</span>
+          <span class="issue-name">${issueName}</span>
+          <span class="wcag-tag">${wcagTag}</span>
+        </div>
+        <div class="issue-demo">
+          ${demoHTML}
+        </div>
+      </div>
+    `;
+  }
+
+  /* ── 1. Image without alt ── */
+  customElements.define('a11y-img-no-alt', class extends HTMLElement {
+    connectedCallback() {
+      buildShadowCard(this, {
+        issueName: 'Missing alt text on img',
+        wcagTag:   '1.1.1 Non-text Content',
+        demoHTML: `
+          <p class="hint">The &lt;img&gt; inside this shadow root has no <code>alt</code> attribute.</p>
+          <!-- ❌ VIOLATION -->
+          <img id="inside-img-no-alt" src="https://placehold.co/160x80/7c3aed/ffffff?text=Shadow+Img" width="160" height="80" />
+        `
+      });
+    }
+  });
+
+  /* ── 2. Low contrast text ── */
+  customElements.define('a11y-low-contrast', class extends HTMLElement {
+    connectedCallback() {
+      buildShadowCard(this, {
+        issueName: 'Insufficient colour contrast',
+        wcagTag:   '1.4.3 Contrast (Min)',
+        demoHTML: `
+          <p class="hint">Contrast ratio ≈ 1.6:1; requires 4.5:1 for normal text.</p>
+          <!-- ❌ VIOLATION: #c0c0c0 on #fff -->
+          <p id="inside-low-contrast-text" style="color:#c0c0c0;background:#ffffff;padding:8px;border:1px solid #eee;margin:0;border-radius:4px;">
+            This shadow-DOM text has critically low contrast.
+          </p>
+        `
+      });
+    }
+  });
+
+  /* ── 3. Input without label ── */
+  customElements.define('a11y-input-no-label', class extends HTMLElement {
+    connectedCallback() {
+      buildShadowCard(this, {
+        issueName: 'Form input without label',
+        wcagTag:   '1.3.1 Info &amp; Relationships · 3.3.2 Labels',
+        demoHTML: `
+          <p class="hint">No &lt;label&gt;, no <code>aria-label</code>, no <code>aria-labelledby</code>.</p>
+          <!-- ❌ VIOLATION -->
+          <input id="inside-input-no-label" type="email" placeholder="Enter your email"
+                 style="padding:8px;border:1px solid #cbd5e1;border-radius:4px;width:100%;" />
+        `
+      });
+    }
+  });
+
+  /* ── 4. Button with no accessible name ── */
+  customElements.define('a11y-btn-no-name', class extends HTMLElement {
+    connectedCallback() {
+      buildShadowCard(this, {
+        issueName: 'Button with no accessible name',
+        wcagTag:   '4.1.2 Name, Role, Value',
+        demoHTML: `
+          <p class="hint">Icon-only button — no text content, no <code>aria-label</code>.</p>
+          <!-- ❌ VIOLATION -->
+          <button id="inside-btn-no-name" style="font-size:1.4rem;padding:6px 12px;cursor:pointer;border:1px solid #cbd5e1;border-radius:4px;background:#f1f5f9;">
+            ⚙️
+          </button>
+        `
+      });
+    }
+  });
+
+  /* ── 5. Non-descriptive link text ── */
+  customElements.define('a11y-link-generic', class extends HTMLElement {
+    connectedCallback() {
+      buildShadowCard(this, {
+        issueName: 'Non-descriptive link text',
+        wcagTag:   '2.4.4 Link Purpose (In Context)',
+        demoHTML: `
+          <p class="hint">"Click here" / "More info" links carry no destination context.</p>
+          <!-- ❌ VIOLATION -->
+          <p id="inside-link-generic-text" style="margin:0;font-size:.9rem;">
+            Read our shadow-DOM guidelines — <a id="inside-link-click-here" href="#">click here</a>.
+            For examples, <a id="inside-link-more-info" href="#">more info</a>.
+          </p>
+        `
+      });
+    }
+  });
+
+  /* ── 6. Skipped heading levels ── */
+  customElements.define('a11y-heading-skip', class extends HTMLElement {
+    connectedCallback() {
+      buildShadowCard(this, {
+        issueName: 'Skipped heading levels',
+        wcagTag:   '1.3.1 Info &amp; Relationships',
+        demoHTML: `
+          <p class="hint">Jumps from H2 → H6, skipping H3, H4, H5.</p>
+          <!-- ❌ VIOLATION -->
+          <h2 id="inside-heading-h2" style="margin:0 0 4px;font-size:1rem;">Shadow Section (H2)</h2>
+          <h6 id="inside-heading-h6" style="margin:0;font-size:.8rem;color:#64748b;">Deep sub-item (H6)</h6>
+        `
+      });
+    }
+  });
+
+  /* ── 7. Table without headers ── */
+  customElements.define('a11y-table-no-headers', class extends HTMLElement {
+    connectedCallback() {
+      buildShadowCard(this, {
+        issueName: 'Data table without &lt;th&gt; headers',
+        wcagTag:   '1.3.1 Info &amp; Relationships',
+        demoHTML: `
+          <p class="hint">All cells are &lt;td&gt;; no column headers or <code>scope</code>.</p>
+          <!-- ❌ VIOLATION -->
+          <table id="inside-table-no-headers" style="width:100%;border-collapse:collapse;font-size:.85rem;">
+            <tr>
+              <td style="border:1px solid #cbd5e1;padding:6px 8px;background:#f8fafc;">Product</td>
+              <td style="border:1px solid #cbd5e1;padding:6px 8px;background:#f8fafc;">Price</td>
+            </tr>
+            <tr>
+              <td style="border:1px solid #cbd5e1;padding:6px 8px;">Widget</td>
+              <td style="border:1px solid #cbd5e1;padding:6px 8px;">$9.99</td>
+            </tr>
+          </table>
+        `
+      });
+    }
+  });
+
+  /* ── 8. Div used as interactive button ── */
+  customElements.define('a11y-div-button', class extends HTMLElement {
+    connectedCallback() {
+      buildShadowCard(this, {
+        issueName: '&lt;div&gt; masquerading as a button',
+        wcagTag:   '4.1.2 Name, Role, Value · 2.1.1 Keyboard',
+        demoHTML: `
+          <p class="hint">Clickable &lt;div&gt; — no <code>role="button"</code>, no <code>tabindex</code>, no keyboard event.</p>
+          <!-- ❌ VIOLATION -->
+          <div id="inside-div-button" onclick="alert('shadow click')"
+               style="display:inline-block;padding:8px 16px;background:#7c3aed;color:#fff;border-radius:6px;cursor:pointer;font-size:.9rem;">
+            Delete Account
+          </div>
+        `
+      });
+    }
+  });
+
+  /* ── 9. Colour as only visual indicator ── */
+  customElements.define('a11y-color-only', class extends HTMLElement {
+    connectedCallback() {
+      buildShadowCard(this, {
+        issueName: 'Colour as the only visual indicator',
+        wcagTag:   '1.4.1 Use of Colour',
+        demoHTML: `
+          <p class="hint">Error state conveyed only by red border — no icon or text cue.</p>
+          <!-- ❌ VIOLATION -->
+          <input id="inside-color-only-input" type="text" value="bad-input@"
+                 style="padding:8px;border:2px solid #ef4444;border-radius:4px;width:100%;outline:none;" />
+        `
+      });
+    }
+  });
+
+  /* ── 10. No visible focus indicator ── */
+  customElements.define('a11y-no-focus-visible', class extends HTMLElement {
+    connectedCallback() {
+      buildShadowCard(this, {
+        issueName: 'Focus indicator suppressed (outline:none)',
+        wcagTag:   '2.4.7 Focus Visible',
+        demoHTML: `
+          <p class="hint">The button below removes the focus ring entirely — keyboard users get no visual cue.</p>
+          <!-- ❌ VIOLATION: outline:none with no replacement focus style -->
+          <style>
+            .no-focus:focus { outline: none; box-shadow: none; }
+          </style>
+          <button id="inside-no-focus-btn" class="no-focus"
+                  style="padding:8px 16px;background:#0ea5e9;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.9rem;">
+            Click or Tab to me
+          </button>
+        `
+      });
+    }
+  });
+</script>
+
+</body>
+</html>
