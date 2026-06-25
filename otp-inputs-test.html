@@ -189,8 +189,8 @@
     <a href="index.html" class="home-link">&larr; Back to WebLab</a>
     <h1>🔐 OTP Inputs Test</h1>
     <p class="subtitle">
-        Six 6-digit OTP input styles for verifying TOTP field detection and autofill.
-        Each specimen lists the OTP-related attributes it carries; the last one carries none (control).
+        Seven 6-digit OTP input styles for verifying TOTP field detection and autofill.
+        Each specimen lists the OTP-related attributes it carries; specimens 3 and 7 carry no explicit OTP hints.
     </p>
 
     <!-- Variant A: simple single input -->
@@ -238,9 +238,30 @@
         <div class="result" id="result-boxes"></div>
     </section>
 
+    <!-- Variant B2: classic boxes, NO explicit OTP hints -->
+    <section class="specimen">
+        <h2>3. Six separate boxes — no OTP hints</h2>
+        <p class="desc">Same classic six-box layout as above, but with every explicit OTP signal removed. Detection has to rely on the <strong>structure</strong> (six adjacent single-char boxes), not attributes.</p>
+        <p class="attrs none">six inputs name="field-1..6" · maxlength="1" — no autocomplete, no inputmode, no OTP/code/verification keywords</p>
+        <label>Enter the 6 characters</label>
+        <div class="otp-group boxes" data-otp-group="plain">
+            <input type="text" name="field-1" maxlength="1" aria-label="Character 1">
+            <input type="text" name="field-2" maxlength="1" aria-label="Character 2">
+            <input type="text" name="field-3" maxlength="1" aria-label="Character 3">
+            <input type="text" name="field-4" maxlength="1" aria-label="Character 4">
+            <input type="text" name="field-5" maxlength="1" aria-label="Character 5">
+            <input type="text" name="field-6" maxlength="1" aria-label="Character 6">
+        </div>
+        <div class="row">
+            <button type="button" data-check="group" data-target="plain">Submit</button>
+            <span class="readout">Value: <b id="readout-plain">—</b></span>
+        </div>
+        <div class="result" id="result-plain"></div>
+    </section>
+
     <!-- Variant C: blank underline spaces -->
     <section class="specimen">
-        <h2>3. Six blank spaces (underline style)</h2>
+        <h2>4. Six blank spaces (underline style)</h2>
         <p class="desc">Borderless cells with only an underline — same six-input behavior, a different visual treatment.</p>
         <p class="attrs">six inputs name="code-1..6" · maxlength="1" · inputmode="numeric" · autocomplete="one-time-code" on first box</p>
         <label>Type your verification code</label>
@@ -261,7 +282,7 @@
 
     <!-- Variant D: segmented single field -->
     <section class="specimen">
-        <h2>4. Segmented single field</h2>
+        <h2>5. Segmented single field</h2>
         <p class="desc">Looks like six cells but is a single input — the segmentation is purely a CSS letter-spacing illusion. Tests detectors that assume multi-box = multiple inputs.</p>
         <p class="attrs">name="one_time_code" · autocomplete="one-time-code" · inputmode="numeric" · maxlength="6"</p>
         <label for="seg-otp">6-digit one-time code</label>
@@ -284,7 +305,7 @@
 
     <!-- Variant E: authenticator-code style, different naming -->
     <section class="specimen">
-        <h2>5. Authenticator code (alternate naming)</h2>
+        <h2>6. Authenticator code (alternate naming)</h2>
         <p class="desc">A single field that uses different OTP-ish naming and a placeholder, to exercise detectors that match on broader keyword sets.</p>
         <p class="attrs">name="authenticatorCode" · id="verification-code" · autocomplete="one-time-code" · inputmode="numeric" · placeholder="123 456"</p>
         <label for="verification-code">Enter the code from your authenticator app</label>
@@ -307,7 +328,7 @@
 
     <!-- Variant F: control, no OTP properties -->
     <section class="specimen">
-        <h2>6. Control field (no OTP hints)</h2>
+        <h2>7. Control field (no OTP hints)</h2>
         <p class="desc">A plain text input with no OTP-related attributes. Your flow should <strong>not</strong> detect this as an OTP field.</p>
         <p class="attrs none">name="fullName" · id="full-name" · autocomplete="name" · type="text" — no OTP signals</p>
         <label for="full-name">Full name</label>
