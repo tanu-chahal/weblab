@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Inputs Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 760px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .home-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #007acc;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .home-link:hover { text-decoration: underline; }
+
+        .specimen {
+            background: white;
+            padding: 24px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+        .specimen h2 {
+            font-size: 18px;
+            margin: 0 0 4px;
+        }
+        .specimen .desc {
+            font-size: 13px;
+            color: #666;
+            margin: 0 0 6px;
+        }
+        .attrs {
+            font-size: 12px;
+            color: #0a7d3c;
+            background: #eafaf0;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 6px 10px;
+            margin: 0 0 18px;
+            font-family: "SFMono-Regular", Consolas, monospace;
+            word-break: break-word;
+        }
+        .attrs.none {
+            color: #8a6d00;
+            background: #fff8e1;
+            border-color: #ffe08a;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        /* Variant A & E: single field */
+        .single-otp {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px 14px;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+        .single-otp:focus {
+            outline: none;
+            border-color: #007acc;
+            box-shadow: 0 0 0 3px rgba(0,122,204,0.15);
+        }
+
+        /* Variant D: segmented illusion (single input) */
+        .segmented-otp {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 14px;
+            font-size: 28px;
+            text-align: center;
+            letter-spacing: 18px;
+            font-family: "SFMono-Regular", Consolas, monospace;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-image: linear-gradient(90deg, #f0f0f0 1px, transparent 0);
+            background-size: 1em 100%;
+        }
+        .segmented-otp:focus {
+            outline: none;
+            border-color: #007acc;
+            box-shadow: 0 0 0 3px rgba(0,122,204,0.15);
+        }
+
+        /* Variants B & C: multi-box groups */
+        .otp-group {
+            display: flex;
+            gap: 10px;
+        }
+        .otp-group input {
+            width: 48px;
+            height: 56px;
+            text-align: center;
+            font-size: 24px;
+            font-family: "SFMono-Regular", Consolas, monospace;
+        }
+        /* B: boxes */
+        .boxes input {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .boxes input:focus {
+            outline: none;
+            border-color: #007acc;
+            box-shadow: 0 0 0 3px rgba(0,122,204,0.15);
+        }
+        /* C: blank underline cells */
+        .blanks input {
+            border: none;
+            border-bottom: 2px solid #999;
+            border-radius: 0;
+            background: transparent;
+        }
+        .blanks input:focus {
+            outline: none;
+            border-bottom-color: #007acc;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 10px 18px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007acc;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover { background-color: #005a9e; }
+
+        .readout {
+            font-size: 13px;
+            color: #555;
+            font-family: "SFMono-Regular", Consolas, monospace;
+        }
+        .readout b { color: #111; }
+        .result {
+            margin-top: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            min-height: 20px;
+        }
+        .result.ok { color: #155724; }
+        .result.err { color: #842029; }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-link">&larr; Back to WebLab</a>
+    <h1>🔐 OTP Inputs Test</h1>
+    <p class="subtitle">
+        Six 6-digit OTP input styles for verifying TOTP field detection and autofill.
+        Each specimen lists the OTP-related attributes it carries; the last one carries none (control).
+    </p>
+
+    <!-- Variant A: simple single input -->
+    <section class="specimen">
+        <h2>1. Simple single input</h2>
+        <p class="desc">A plain text field that announces itself as an OTP field via attributes and label.</p>
+        <p class="attrs">name="otp" · id="otp" · autocomplete="one-time-code" · inputmode="numeric" · pattern="[0-9]{6}" · maxlength="6"</p>
+        <label for="otp">Enter the 6-digit OTP</label>
+        <input
+            type="text"
+            class="single-otp"
+            id="otp"
+            name="otp"
+            autocomplete="one-time-code"
+            inputmode="numeric"
+            pattern="[0-9]{6}"
+            maxlength="6"
+            placeholder="------"
+            aria-label="One-time passcode">
+        <div class="row">
+            <button type="button" data-check="single" data-target="otp">Submit</button>
+            <span class="readout">Value: <b id="readout-otp">—</b></span>
+        </div>
+        <div class="result" id="result-otp"></div>
+    </section>
+
+    <!-- Variant B: classic 6 boxes -->
+    <section class="specimen">
+        <h2>2. Six separate boxes (classic)</h2>
+        <p class="desc">The pattern most sites use: six single-character boxes with auto-advance, backspace navigation, and paste-to-distribute.</p>
+        <p class="attrs">six inputs name="otp-1..6" · maxlength="1" · inputmode="numeric" · autocomplete="one-time-code" on first box</p>
+        <label>Enter the 6-digit code</label>
+        <div class="otp-group boxes" data-otp-group="boxes">
+            <input type="text" name="otp-1" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="Digit 1">
+            <input type="text" name="otp-2" inputmode="numeric" maxlength="1" aria-label="Digit 2">
+            <input type="text" name="otp-3" inputmode="numeric" maxlength="1" aria-label="Digit 3">
+            <input type="text" name="otp-4" inputmode="numeric" maxlength="1" aria-label="Digit 4">
+            <input type="text" name="otp-5" inputmode="numeric" maxlength="1" aria-label="Digit 5">
+            <input type="text" name="otp-6" inputmode="numeric" maxlength="1" aria-label="Digit 6">
+        </div>
+        <div class="row">
+            <button type="button" data-check="group" data-target="boxes">Submit</button>
+            <span class="readout">Value: <b id="readout-boxes">—</b></span>
+        </div>
+        <div class="result" id="result-boxes"></div>
+    </section>
+
+    <!-- Variant C: blank underline spaces -->
+    <section class="specimen">
+        <h2>3. Six blank spaces (underline style)</h2>
+        <p class="desc">Borderless cells with only an underline — same six-input behavior, a different visual treatment.</p>
+        <p class="attrs">six inputs name="code-1..6" · maxlength="1" · inputmode="numeric" · autocomplete="one-time-code" on first box</p>
+        <label>Type your verification code</label>
+        <div class="otp-group blanks" data-otp-group="blanks">
+            <input type="text" name="code-1" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="Digit 1">
+            <input type="text" name="code-2" inputmode="numeric" maxlength="1" aria-label="Digit 2">
+            <input type="text" name="code-3" inputmode="numeric" maxlength="1" aria-label="Digit 3">
+            <input type="text" name="code-4" inputmode="numeric" maxlength="1" aria-label="Digit 4">
+            <input type="text" name="code-5" inputmode="numeric" maxlength="1" aria-label="Digit 5">
+            <input type="text" name="code-6" inputmode="numeric" maxlength="1" aria-label="Digit 6">
+        </div>
+        <div class="row">
+            <button type="button" data-check="group" data-target="blanks">Submit</button>
+            <span class="readout">Value: <b id="readout-blanks">—</b></span>
+        </div>
+        <div class="result" id="result-blanks"></div>
+    </section>
+
+    <!-- Variant D: segmented single field -->
+    <section class="specimen">
+        <h2>4. Segmented single field</h2>
+        <p class="desc">Looks like six cells but is a single input — the segmentation is purely a CSS letter-spacing illusion. Tests detectors that assume multi-box = multiple inputs.</p>
+        <p class="attrs">name="one_time_code" · autocomplete="one-time-code" · inputmode="numeric" · maxlength="6"</p>
+        <label for="seg-otp">6-digit one-time code</label>
+        <input
+            type="text"
+            class="segmented-otp"
+            id="seg-otp"
+            name="one_time_code"
+            autocomplete="one-time-code"
+            inputmode="numeric"
+            pattern="[0-9]{6}"
+            maxlength="6"
+            aria-label="One-time code">
+        <div class="row">
+            <button type="button" data-check="single" data-target="seg-otp">Submit</button>
+            <span class="readout">Value: <b id="readout-seg-otp">—</b></span>
+        </div>
+        <div class="result" id="result-seg-otp"></div>
+    </section>
+
+    <!-- Variant E: authenticator-code style, different naming -->
+    <section class="specimen">
+        <h2>5. Authenticator code (alternate naming)</h2>
+        <p class="desc">A single field that uses different OTP-ish naming and a placeholder, to exercise detectors that match on broader keyword sets.</p>
+        <p class="attrs">name="authenticatorCode" · id="verification-code" · autocomplete="one-time-code" · inputmode="numeric" · placeholder="123 456"</p>
+        <label for="verification-code">Enter the code from your authenticator app</label>
+        <input
+            type="text"
+            class="single-otp"
+            id="verification-code"
+            name="authenticatorCode"
+            autocomplete="one-time-code"
+            inputmode="numeric"
+            maxlength="6"
+            placeholder="123 456"
+            aria-label="Authenticator verification code">
+        <div class="row">
+            <button type="button" data-check="single" data-target="verification-code">Submit</button>
+            <span class="readout">Value: <b id="readout-verification-code">—</b></span>
+        </div>
+        <div class="result" id="result-verification-code"></div>
+    </section>
+
+    <!-- Variant F: control, no OTP properties -->
+    <section class="specimen">
+        <h2>6. Control field (no OTP hints)</h2>
+        <p class="desc">A plain text input with no OTP-related attributes. Your flow should <strong>not</strong> detect this as an OTP field.</p>
+        <p class="attrs none">name="fullName" · id="full-name" · autocomplete="name" · type="text" — no OTP signals</p>
+        <label for="full-name">Full name</label>
+        <input
+            type="text"
+            class="single-otp"
+            id="full-name"
+            name="fullName"
+            autocomplete="name"
+            placeholder="Jane Doe"
+            aria-label="Full name">
+        <div class="row">
+            <button type="button" data-check="single" data-target="full-name">Submit</button>
+            <span class="readout">Value: <b id="readout-full-name">—</b></span>
+        </div>
+        <div class="result" id="result-full-name"></div>
+    </section>
+
+    <footer>🔐 OTP Inputs Test — part of WebLab</footer>
+
+    <script>
+        // --- Multi-box groups: auto-advance, backspace nav, paste-distribute ---
+        document.querySelectorAll('[data-otp-group]').forEach(function (group) {
+            var inputs = Array.prototype.slice.call(group.querySelectorAll('input'));
+
+            inputs.forEach(function (input, idx) {
+                input.addEventListener('input', function () {
+                    // keep digits only, one char per box
+                    input.value = input.value.replace(/\D/g, '').slice(0, 1);
+                    if (input.value && idx < inputs.length - 1) {
+                        inputs[idx + 1].focus();
+                    }
+                    updateGroupReadout(group);
+                });
+
+                input.addEventListener('keydown', function (e) {
+                    if (e.key === 'Backspace' && !input.value && idx > 0) {
+                        inputs[idx - 1].focus();
+                    }
+                });
+
+                input.addEventListener('paste', function (e) {
+                    e.preventDefault();
+                    var digits = (e.clipboardData || window.clipboardData)
+                        .getData('text').replace(/\D/g, '').split('');
+                    inputs.forEach(function (box, i) {
+                        box.value = digits[i] || '';
+                    });
+                    var next = Math.min(digits.length, inputs.length - 1);
+                    inputs[next].focus();
+                    updateGroupReadout(group);
+                });
+            });
+        });
+
+        function groupValue(group) {
+            return Array.prototype.slice.call(group.querySelectorAll('input'))
+                .map(function (i) { return i.value; })
+                .join('');
+        }
+
+        function updateGroupReadout(group) {
+            var key = group.getAttribute('data-otp-group');
+            var val = groupValue(group);
+            document.getElementById('readout-' + key).textContent = val || '—';
+        }
+
+        // --- Single fields: live readout ---
+        document.querySelectorAll('.single-otp, .segmented-otp').forEach(function (input) {
+            input.addEventListener('input', function () {
+                document.getElementById('readout-' + input.id).textContent = input.value || '—';
+            });
+        });
+
+        // --- Submit buttons: echo captured value so you can verify autofill worked ---
+        document.querySelectorAll('button[data-check]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var type = btn.getAttribute('data-check');
+                var target = btn.getAttribute('data-target');
+                var value, resultEl;
+
+                if (type === 'group') {
+                    value = groupValue(document.querySelector('[data-otp-group="' + target + '"]'));
+                    resultEl = document.getElementById('result-' + target);
+                } else {
+                    value = document.getElementById(target).value;
+                    resultEl = document.getElementById('result-' + target);
+                }
+
+                if (/^\d{6}$/.test(value)) {
+                    resultEl.textContent = '✓ Captured 6-digit code: ' + value;
+                    resultEl.className = 'result ok';
+                } else if (value.length === 0) {
+                    resultEl.textContent = '— No value entered';
+                    resultEl.className = 'result err';
+                } else {
+                    resultEl.textContent = '✗ Got "' + value + '" (' + value.length + ' chars) — expected 6 digits';
+                    resultEl.className = 'result err';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
